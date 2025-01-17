@@ -1,0 +1,9 @@
+node_modules
+.next
+.github
+docker
+env
+nginx
+public
+scripts
+src/__files__

@@ -1,0 +1,16 @@
+services:
+  postgres:
+    extends:
+      file: docker-compose.yml
+      service: postgres
+    ports:
+      - "5432:5432"
+volumes:
+  postgres_data:
+    driver: local
+  sde_data:
+    driver: local
+
+networks:
+  eve_metro_network:
+    driver: bridge

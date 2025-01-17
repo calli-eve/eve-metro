@@ -1,0 +1,318 @@
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+
+@font-face {
+    font-family: Shentox;
+    src: url('/font/Shentox-SemiBold.ttf');
+}
+
+/* HTML5 display-role reset for older browsers */
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+    display: block;
+}
+body {
+    line-height: 1;
+    font-family: 'Shentox', sans-serif;
+    background-color: black;
+}
+ol,
+ul {
+    list-style: none;
+}
+blockquote,
+q {
+    quotes: none;
+}
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+    content: '';
+    content: none;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+input {
+    padding-left: 0.5rem;
+}
+h3 {
+    color: white;
+    font-size: 1.2rem;
+}
+
+.ant-menu-item,
+.ant-menu-item > a {
+    color: white !important;
+    font-size: 1.2rem;
+}
+.desktop-menu {
+    display: flex;
+    align-items: center;
+}
+.mobile-menu {
+    display: none;
+}
+@media screen and (max-width: 600px) {
+    .desktop-menu {
+        display: none;
+    }
+    .mobile-menu {
+        display: block;
+    }
+}
+
+.ant-tabs-tab,
+.ant-tabs-content {
+    color: white;
+}
+
+.ant-tabs {
+    height: 100%;
+}
+.ant-tabs-content {
+    height: 100%;
+}
+.layout {
+    background-color: black;
+    color: white;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+.ant-row.ant-form-item {
+    overflow: hidden;
+}
+
+.ant-row {
+    height: 100%;
+    overflow: scroll;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+.ant-row::-webkit-scrollbar {
+    display: none;
+}
+
+html::-webkit-scrollbar {
+    display: none;
+}
+
+html {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+.ant-layout-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.ant-avatar {
+    margin-right: 1rem;
+}
+
+.ant-table-cell {
+    vertical-align: middle;
+}
+
+.critical {
+    color: red;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.flex-end {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.white-text {
+    color: white !important;
+}
+
+.map.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.map {
+    transition: opacity 0.5s;
+    opacity: 1;
+}
+
+.hero-background {
+    width: 100vw;
+    height: 100vh;
+    background-image: url('../../public/img/bg.jpg');
+    padding: 1rem;
+    overflow: hidden;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.hero-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.hero-title {
+    font-size: 4rem;
+    line-height: 4rem;
+    margin-bottom: 0rem;
+}
+
+.hero-text {
+    font-size: 2rem;
+    line-height: 2rem;
+    margin-bottom: 0rem;
+}
+
+.feature-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin: 6rem 0;
+    background-color: #001529;
+    padding: 4rem;
+    border-radius: 2px;
+}
+
+.how-to-section {
+    margin-bottom: 6rem;
+    padding: 1rem;
+}
+
+@media screen and (min-width: 800px) {
+    .feature-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin: 6rem 0;
+    }
+
+    .hero-container {
+        padding-left: 4rem;
+    }
+
+    .hero-title {
+        font-size: 8rem;
+        line-height: 8rem;
+    }
+
+    .hero-text {
+        font-size: 4rem;
+        line-height: 4rem;
+    }
+}

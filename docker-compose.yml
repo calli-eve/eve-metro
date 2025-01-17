@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: always
+    env_file: ".env"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - eve_metro_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  eve-metro:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_DOMAIN: ${NEXT_PUBLIC_DOMAIN}
+        NEXT_PUBLIC_EVE_SSO_ID: ${NEXT_PUBLIC_EVE_SSO_ID}
+        NEXT_PUBLIC_EVE_MAIL_TEST_CHARACTER_ID: ${NEXT_PUBLIC_EVE_MAIL_TEST_CHARACTER_ID}
+        NEXT_PUBLIC_EVE_SSO_AUTH_HOST: ${NEXT_PUBLIC_EVE_SSO_AUTH_HOST}
+        NEXT_PUBLIC_EVE_IMAGES_API_HOST: ${NEXT_PUBLIC_EVE_IMAGES_API_HOST}
+        NEXT_PUBLIC_EVE_ESI_HOST: ${NEXT_PUBLIC_EVE_ESI_HOST}
+    container_name: eve_metro
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file: ".env"
+    volumes:
+      - ./sde:${SDE_PATH}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - eve_metro_network
+    command: ["sh", "-c", "npm run initialize-database && npm run knex-migrate && npm run dev"]
+
+volumes:
+  postgres_data:
+    driver: local
+  sde_data:
+    driver: local
+
+networks:
+  eve_metro_network:
+    driver: bridge
