@@ -1,6 +1,7 @@
 EVE Metro
 
 
+
 ## Cron Endpoints
 
 Configure your cron job to call this endpoint every 30 minutes.
@@ -67,4 +68,110 @@ The SDE should be updated when CCP releases new versions, typically after major 
 ### External APIs
 - `EVE_SCOUT_API_URL` - EVE Scout API endpoint (default: https://api.eve-scout.com/v2/public/signatures)
 
+## Development
 
+### Prerequisites
+Before you start, ensure you have the following installed:
+- **Node.js** (version 14 or higher)
+- **Docker** and **Docker Compose**
+- **Git**
+
+### Getting Started
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/your-username/eve-metro.git
+   cd eve-metro
+   ```
+
+2. **Set Up Environment Variables**
+   Copy the example environment file and configure it:
+   ```bash
+   cp env.example .env
+   ```
+   Edit the `.env` file to fill in the required values. Set POSTGRES_HOST to localhost. Remember to set your character IDs in ADMIN_CHARACTER_IDS.
+
+3. **Download and Set Up the EVE SDE**
+   Create a directory for the EVE Static Data Export (SDE) and download the latest version:
+   ```bash
+   mkdir sde
+   wget https://www.fuzzwork.co.uk/dump/sqlite-latest.sqlite.bz2
+   bzip2 -d sqlite-latest.sqlite.bz2
+   mv sqlite-latest.sqlite sde/
+   ```
+
+4. **Start the Development Database**
+   Use Docker Compose to start the necessary services:
+   ```bash
+   docker-compose -f docker-compose-dev.yml up -d
+   ```
+   This will start the PostgreSQL database and any other services defined in `docker-compose.yml`.
+
+5. **Install Dependencies**
+   Install the required Node.js packages:
+   ```bash
+   npm install
+   ```
+6. **Run the knex migrations**
+   ```bash
+   npm run knex-migrate
+   ```
+   This will start the PostgreSQL database and any other services defined in `docker-compose.yml`.
+
+7. **Run the Development Server**
+   Start the application in development mode:
+   ```bash
+   npm run dev
+   ```
+   The application should now be accessible at `http://localhost:3000`.
+
+8. **Login to the Admin Panel and setup wallet watcher and email bot**
+   After EVEMetro is running you need to login to the admin panel and setup the wallet watcher and email bot characters.
+   Wallet watcher character should be a character that has access to corporation wallet.
+   Email bot character should be a character that you want to be the one sending out emails in game.
+
+9. **CRON JOBS**
+   The application has 3 cron jobs that need to be setup.
+   - Wallet watcher cron job
+   - Email bot cron job
+   - Allowed entities cron job
+
+   During development you can also simulate the cron jobs by calling the endpoints directly:
+   ```bash
+   curl http://localhost:3000/api/cron/create-allowed-entities
+   ```
+      ```bash
+   curl http://localhost:3000/api/cron/purge-allowed-entities
+   ```
+      ```bash
+   curl http://localhost:3000/api/cron/purge-connections
+   ```
+
+
+### Development Commands
+- **Start Development Server**: `npm run dev`
+- **Build Production Version**: `npm run build`
+- **Start Production Server**: `npm run start`
+- **Run Linting**: `npm run lint`
+- **Run Tests**: `npm run test`
+
+### Contributing
+If you want to contribute to the project:
+1. **Create a new branch** for your feature or bug fix:
+   ```bash
+   git checkout -b feature/my-feature
+   ```
+2. **Make your changes** and commit them:
+   ```bash
+   git commit -m "Add my feature"
+   ```
+3. **Push your changes** to your fork:
+   ```bash
+   git push origin feature/my-feature
+   ```
+4. **Create a Pull Request** to the main repository.
+
+### Additional Resources
+- [EVE Online Developer Portal](https://developers.eveonline.com/)
+- [Docker Documentation](https://docs.docker.com/)
+- [Node.js Documentation](https://nodejs.org/en/docs/)
