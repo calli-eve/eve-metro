@@ -38,7 +38,7 @@ export const weeklyScanningSpread = (): Promise<ScannerStats[]> => {
     return knex(AUDIT_LOG_TABLE)
         .select(knex.raw('extract(ISODOW from timestamp) as value, count(timestamp)'))
         .where('timestamp', '>', DateTime.now().minus({ months: 1 }).toISO())
-        .whereIn('action', ['insert_connection', 'delete_connection'])
+        .whereIn('action', ['insert_connection'])
         .groupBy('value')
         .orderBy('value')
 }
@@ -47,7 +47,7 @@ export const dailyScanningSpread = (): Promise<ScannerStats[]> => {
     return knex(AUDIT_LOG_TABLE)
         .select(knex.raw('extract(HOUR from timestamp) as value, count(timestamp)'))
         .where('timestamp', '>', DateTime.now().minus({ months: 1 }).toISO())
-        .whereIn('action', ['insert_connection', 'delete_connection'])
+        .whereIn('action', ['insert_connection'])
         .groupBy('value')
         .orderBy('value')
 }

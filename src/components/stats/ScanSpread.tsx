@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Typography } from 'antd'
 import { DateTime } from 'luxon'
 import { useMediaQuery } from 'react-responsive'
-import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell, YAxis } from 'recharts'
 import { HIGHSEC_GREEN, TRIGLAVIAN_RED } from '../../const'
 
 interface ScanSpreadItem {
@@ -19,14 +19,6 @@ const ScanSpread = () => {
     const [perWeek, setPerWeek] = useState<ScanSpreadItem[]>([])
     const [perDay, setPerDay] = useState<ScanSpreadItem[]>([])
 
-    const handleMouseOver = (data) => {
-        setHoverWeek(data)
-    }
-
-    const handleMouseLeave = () => {
-        setHoverWeek(undefined)
-    }
-
     const isTabletOrMobile = useMediaQuery({ query: '(max-width: 1224px)' })
 
     const fetchData = async () => {
@@ -35,9 +27,9 @@ const ScanSpread = () => {
             .then((res) => {
                 setPerWeek(
                     [...Array(7).keys()].map((i) => {
-                        const valueFromDb = res.find((r) => r.value === i + 1)
+                        const valueFromDb = res.find((r) => parseInt(r.value) === i + 1)
                         return {
-                            value: i + 1,
+                            value: DateTime.local().set({ weekday: i + 1 }).toFormat('EEE'),
                             count: valueFromDb?.count ? parseInt(valueFromDb?.count) : 0
                         }
                     })
@@ -49,9 +41,9 @@ const ScanSpread = () => {
             .then((res) =>
                 setPerDay(
                     [...Array(24).keys()].map((i) => {
-                        const valueFromDb = res.find((r) => r.value === i)
+                        const valueFromDb = res.find((r) => parseInt(r.value) === i + 1)
                         return {
-                            value: i,
+                            value: DateTime.local().set({ hour: i + 1 }).toFormat('HH'),
                             count: valueFromDb?.count ? parseInt(valueFromDb?.count) : 0
                         }
                     })
@@ -62,18 +54,6 @@ const ScanSpread = () => {
     useEffect(() => {
         fetchData().then().catch(console.log)
     }, [])
-
-    const [hoverWeek, setHoverWeek] = useState(undefined)
-    const [hoverDay, setHoverDay] = useState(undefined)
-
-    const dayNumberToTooltip = (v) => {
-        const weekday = DateTime.local().set({ weekday: v.x }).toFormat('EEE')
-        return { title: weekday, value: needsScanningWeek(v) ? 'needs more scanners' : 'ok' }
-    }
-    const hourNumberToTooltip = (v) => {
-        const hour = DateTime.local().set({ hour: v.x }).toFormat('HH')
-        return { title: hour, value: needsScanningDay(v) ? 'needs more scanners' : 'ok' }
-    }
 
     const needsScanningWeek = (v): boolean => {
         const average =
@@ -91,6 +71,10 @@ const ScanSpread = () => {
         return v.y < average || v.y < MINIMUM_SIGS_PER_HOUR
     }
 
+    const getBarColor = (value) => {
+        return value < MINIMUM_SIGS_PER_HOUR ? TRIGLAVIAN_RED : HIGHSEC_GREEN
+    }
+
     return (
         <>
             <Title level={2} style={{ color: 'white', marginTop: '1rem' }}>
@@ -106,95 +90,36 @@ const ScanSpread = () => {
                     <Title level={4} style={{ color: 'white', marginTop: '1rem' }}>
                         Per weekday
                     </Title>
-                    <ResponsiveContainer
-                        width={isTabletOrMobile ? 150 : 300}
-                        height={isTabletOrMobile ? 150 : 300}>
-                        <BarChart
-                            data={perWeek.map((i) => ({
-                                x: i.value,
-                                y: i.count,
-                                color: needsScanningWeek({ x: i.value, y: i.count })
-                                    ? TRIGLAVIAN_RED
-                                    : HIGHSEC_GREEN
-                            }))}
-                            onMouseLeave={handleMouseLeave}>
-                            <XAxis
-                                dataKey="x"
-                                tickFormatter={(v) =>
-                                    DateTime.local().set({ weekday: v }).toFormat('EEE')
-                                }
-                            />
-                            <Tooltip
-                                cursor={{ fill: 'transparent' }}
-                                content={({ active, payload }) => {
-                                    if (active && payload && payload.length) {
-                                        const { x, y } = payload[0].payload
-                                        return <div>{dayNumberToTooltip({ x, y })}</div>
-                                    }
-                                    return null
-                                }}
-                            />
-                            <Bar dataKey="y" onMouseOver={(data) => handleMouseOver(data.payload)}>
-                                {perWeek.map((i, index) => (
-                                    <Cell
-                                        key={`cell-${index}`}
-                                        fill={
-                                            needsScanningWeek({ x: i.value, y: i.count })
-                                                ? TRIGLAVIAN_RED
-                                                : HIGHSEC_GREEN
-                                        }
-                                    />
-                                ))}
+                        <BarChart width={isTabletOrMobile ? 150 : 300}
+                            height={isTabletOrMobile ? 150 : 300}
+                            data={perWeek}>
+                            <XAxis dataKey="value" />
+                            <Bar dataKey="count">
+                            {perWeek.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={needsScanningWeek(entry.value) ? TRIGLAVIAN_RED : HIGHSEC_GREEN} />
+                            ))}
                             </Bar>
+                                
                         </BarChart>
-                    </ResponsiveContainer>
                 </div>
                 <div>
                     <Title level={4} style={{ color: 'white', marginTop: '1rem' }}>
                         Per hour
                     </Title>
-                    <ResponsiveContainer
-                        width={isTabletOrMobile ? 150 : 300}
-                        height={isTabletOrMobile ? 150 : 300}>
                         <BarChart
-                            data={perWeek.map((i) => ({
-                                x: i.value,
-                                y: i.count,
-                                color: needsScanningWeek({ x: i.value, y: i.count })
-                                    ? TRIGLAVIAN_RED
-                                    : HIGHSEC_GREEN
-                            }))}
-                            onMouseLeave={handleMouseLeave}>
+                        width={isTabletOrMobile ? 150 : 300}
+                        height={isTabletOrMobile ? 150 : 300}
+                            data={perDay}>
                             <XAxis
-                                dataKey="x"
-                                tickFormatter={(v) =>
-                                    DateTime.local().set({ weekday: v }).toFormat('EEE')
-                                }
+                                dataKey="value"
+                          
                             />
-                            <Tooltip
-                                cursor={{ fill: 'transparent' }}
-                                content={({ active, payload }) => {
-                                    if (active && payload && payload.length) {
-                                        const { x, y } = payload[0].payload
-                                        return <div>{dayNumberToTooltip({ x, y })}</div>
-                                    }
-                                    return null
-                                }}
-                            />
-                            <Bar dataKey="y" onMouseOver={(data) => handleMouseOver(data.payload)}>
-                                {perWeek.map((i, index) => (
-                                    <Cell
-                                        key={`cell-${index}`}
-                                        fill={
-                                            needsScanningDay({ x: i.value, y: i.count })
-                                                ? TRIGLAVIAN_RED
-                                                : HIGHSEC_GREEN
-                                        }
-                                    />
-                                ))}
+                            <Bar dataKey="count"> 
+                            {perDay.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={needsScanningDay(entry.value) ? TRIGLAVIAN_RED : HIGHSEC_GREEN} />
+                            ))}
                             </Bar>
                         </BarChart>
-                    </ResponsiveContainer>
                 </div>
             </div>
         </>
