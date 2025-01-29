@@ -1,8 +1,8 @@
 import * as sqlite from 'better-sqlite3'
 import { EveStaticSystem } from '../pathfinder/static-nodes'
 import { SimpleConnection, SimpleSystem, SystemClassId } from '../types/types'
-
-const db = sqlite(`${process.env.SDE_PATH}/sqlite-latest.sqlite`)
+const SDE_PATH = process.env.SDE_MOUNT_PATH ?? process.env.SDE_PATH
+const db = sqlite(`${SDE_PATH}/sqlite-latest.sqlite`)
 
 export const getSystemFromDatabase = (systemId: number | string): EveStaticSystem => {
     return db

@@ -26,6 +26,19 @@ Automated endpoint that handles cleanup of allowed entities. This endpoint:
 - Should be called periodically to maintain clean access control lists
 - Helps ensure only currently valid entities maintain access
 
+## EVE Static Data Export (SDE)
+
+The application requires the EVE Online Static Data Export to function. This contains essential information about EVE Online's universe structure.
+
+### Setup
+
+1. Download the latest SDE from [Fuzzwork sqlite conversion](https://www.fuzzwork.co.uk/dump/sqlite-latest.sqlite.bz2)
+2. Extract the SDE to your configured `SDE_PATH`
+3. Ensure the application has read access to this directory
+
+### Updating
+The SDE should be updated when CCP releases new versions, typically after major game updates that change universe structure.
+
 ## Environment Variables
 
 ### EVE Online Integration
@@ -38,13 +51,13 @@ Automated endpoint that handles cleanup of allowed entities. This endpoint:
 
 ### Development Settings
 - `ENVIRONMENT` - Set to 'development' to block EVEMail spam during development
-- `SDE_PATH` - Path to EVE Static Data Export (default: /var/lib/sde)
+- `SDE_PATH` - Path to EVE Static Data Export Fuzzwork sqlite conversion on host system
 
 ### Database Configuration
 - `POSTGRES_USER` - PostgreSQL username
 - `POSTGRES_PASSWORD` - PostgreSQL password
 - `POSTGRES_DB` - PostgreSQL database name
-- `POSTGRES_HOST` - PostgreSQL host address
+- `POSTGRES_HOST` - PostgreSQL host address (postgres when running with docker compose)
 - `EVE_METRO_DATABASE` - Application database name (default: evemetro)
 
 ### Security
