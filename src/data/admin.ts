@@ -3,7 +3,6 @@ import { DateTime } from 'luxon'
 import * as R from 'ramda'
 import { AllowedEntity } from '../pages/api/admin/allowed'
 import { Session } from '../types/types'
-import { insertTodo, TodoItem } from './todo'
 import {
     getAllWalletWatchers,
     insertPaymentsLogEntry,
@@ -13,7 +12,7 @@ import {
     updateWalletWatcherStatus
 } from './wallet'
 import { decryptSessionString, encryptSessionString } from '../utils'
-import { sendACLEmailToUser, sendTopupEmailToUser } from './eveMailClient'
+import { sendCustomerLostEveMail, sendTopupEmailToUser } from './eveMailClient'
 import { getWalletJournal, renewToken } from './esiClient'
 import { MONTHLY_FEE } from '../const'
 
@@ -72,15 +71,9 @@ export const purgeExpiredEntities = async (): Promise<void> => {
         dateNow
     )
     if (entriesToPurge.length === 0) return
-    const todoInput: TodoItem[] = entriesToPurge.map((e) => {
-        return {
-            id: undefined,
-            entity_id: e.entity_id,
-            type: e.type,
-            action: 'remove'
-        }
-    })
-    await insertTodo(todoInput)
+    for (const entry of entriesToPurge) {
+        await sendCustomerLostEveMail(entry.entity_id)
+    }
     return knex(ALLOWED_ENTITY_TABLE).where('valid_untill', '<', dateNow).del()
 }
 
@@ -124,17 +117,13 @@ const renewSessionToken = async (session: Session): Promise<Session> => {
 const processOneWallet = async (session: Session) => {
     const { pages, data } = await getWalletJournal(session, 1)
     const pagesToProcess: number[] = R.drop(2, [...Array(pages).keys()])
-
     const restOfThePages = (
         await Promise.all(
             pagesToProcess.map(async (page) => (await getWalletJournal(session, page)).data)
         )
     ).flat()
-
     const allPages = [...data, ...restOfThePages]
-
     const filteredWalletEntries = allPages.filter((j) => j.ref_type === 'player_donation')
-
     const paymentLogEntries: PaymentsLogEntry[] = filteredWalletEntries.map((j) => {
         return {
             id: j.id,
@@ -147,13 +136,10 @@ const processOneWallet = async (session: Session) => {
             processed_date: DateTime.utc().toSQL()
         }
     })
-
-    const newLogEntryIds = await insertPaymentsLogEntry(paymentLogEntries)
-
+    const logEntriesNotProcessed = await insertPaymentsLogEntry(paymentLogEntries)
     const newLogEntries = paymentLogEntries.filter((log) =>
-        newLogEntryIds.some((id) => parseInt(id) === log.id)
+        logEntriesNotProcessed.some((id) => parseInt(id) !== log.id)
     )
-
     const newEntriesOverMonthlyThreshold = newLogEntries.filter((p) => p.amount >= MONTHLY_FEE)
     if (newEntriesOverMonthlyThreshold.length === 0) return
 
@@ -176,29 +162,7 @@ const processNewUsers = async (logEntries: PaymentsLogEntry[]): Promise<void> =>
         }
         return allowedEntity
     })
-    const insertedEntries = await insertAllowedEntityBatch(allowedEntriesToInsert)
-
-    if (insertedEntries.length > 0) {
-        await insertTodo(
-            insertedEntries.map((id) => {
-                return {
-                    id: undefined,
-                    entity_id: id,
-                    type: 'Character',
-                    action: 'add'
-                }
-            })
-        )
-        for (const id in insertedEntries) {
-            try {
-                await sendACLEmailToUser(parseInt(id))
-            } catch (e) {
-                console.log(e)
-                console.log('failed sending sending topup evemail')
-            }
-        }
-        insertedEntries.forEach((entry) => {})
-    }
+    await insertAllowedEntityBatch(allowedEntriesToInsert)
 }
 
 const processExistingUsers = async (logEntries: PaymentsLogEntry[]): Promise<void> => {
@@ -220,12 +184,7 @@ const processExistingUsers = async (logEntries: PaymentsLogEntry[]): Promise<voi
         await updateExpiryForAllowedEntity(entity.entity_id, newValidUntill.toSQL())
         await setPaymentsProcessed([logEntry.id], DateTime.utc().toSQL())
         try {
-            sendTopupEmailToUser({
-                id: undefined,
-                entity_id: entity.entity_id,
-                type: 'Character',
-                action: 'add'
-            })
+            sendTopupEmailToUser(entity.entity_id)
         } catch (e) {
             console.log(e)
             console.log('failed sending sending topup evemail')

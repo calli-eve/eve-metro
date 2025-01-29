@@ -12,7 +12,6 @@ import {
 import { AllowedEntity } from '../../pages/api/admin/allowed'
 import AddAllowed from './AddAllowed'
 import AuditLog from './AuditLog'
-import TodoTable from './TodoTable'
 import RegisterWallet from './RegisterWallet'
 import WalletTransactions from './WalletTransactions'
 import RegisterEmailBot from './RegisterEmailBot'
@@ -198,7 +197,6 @@ const AdminTable = () => {
                     )}
                 columns={columnsAllowed}
             />
-            <TodoTable />
             <WalletTransactions />
             <AuditLog />
             <Title className="white-text" level={2}>
