@@ -143,20 +143,86 @@ h3 {
     color: white !important;
     font-size: 1.2rem;
 }
-.desktop-menu {
+
+.responsive-header {
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.menu-container {
     display: flex;
     align-items: center;
+    flex: 1;
 }
-.mobile-menu {
+
+.menu-trigger {
     display: none;
+    color: white;
+    margin-right: 16px;
 }
-@media screen and (max-width: 600px) {
-    .desktop-menu {
-        display: none;
-    }
-    .mobile-menu {
+
+.responsive-menu {
+    flex: 1;
+    border: none;
+    background: transparent;
+}
+
+.responsive-menu.desktop {
+    display: block !important;
+    width: 100%;
+}
+
+.responsive-menu.desktop .ant-menu-item {
+    margin: 0 8px;
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    white-space: nowrap;
+    margin-left: 16px;
+}
+
+.sub-status {
+    color: white;
+    margin-left: 8px;
+}
+
+@media screen and (max-width: 768px) {
+    .menu-trigger {
         display: block;
     }
+
+    .responsive-menu.mobile {
+        position: absolute;
+        top: 64px;
+        left: 0;
+        right: 0;
+        background: #001529;
+        padding: 8px 16px;
+        display: none !important;
+        z-index: 1000;
+    }
+
+    .responsive-menu.collapsed {
+        display: block !important;
+    }
+
+    .responsive-menu .ant-menu-item {
+        height: 48px;
+        line-height: 48px;
+        margin: 4px 0 !important;
+    }
+}
+
+/* Remove old menu styles */
+.desktop-menu,
+.mobile-menu {
+    display: none !important;
 }
 
 .ant-tabs-tab,

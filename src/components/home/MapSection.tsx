@@ -59,25 +59,25 @@ const MapSection = () => {
             <div className="feature-container">
                 <Card style={{ margin: '1rem', width: '300px' }} hoverable>
                     <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
-                        <RocketOutlined style={{ fontSize: '4rem', marginBottom: '1rem' }} />
+                        <RocketOutlined style={{ display: 'flex', justifyContent: 'center', fontSize: '4rem', marginBottom: '1rem' }} />
                         From Jita to Amarr in less than 12 jumps 90% of the time
                     </div>
                 </Card>
                 <Card hoverable style={{ margin: '1rem', width: '300px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
-                        <CompassOutlined style={{ fontSize: '4rem', marginBottom: '1rem' }} />
+                        <CompassOutlined style={{ display: 'flex', justifyContent: 'center', fontSize: '4rem', marginBottom: '1rem' }} />
                         Return from anywhere in EVE to Highsec with filaments in few minutes
                     </div>
                 </Card>
                 <Card hoverable style={{ margin: '1rem', width: '300px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
-                        <MoneyCollectOutlined style={{ fontSize: '4rem', marginBottom: '1rem' }} />
+                        <MoneyCollectOutlined style={{ display: 'flex', justifyContent: 'center', fontSize: '4rem', marginBottom: '1rem' }} />
                         Service available to individual pilots for 50 million ISK / month
                     </div>
                 </Card>
                 <Card hoverable style={{ margin: '1rem', width: '300px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
-                        <CrownOutlined style={{ fontSize: '4rem', marginBottom: '1rem' }} />
+                        <CrownOutlined style={{ display: 'flex', justifyContent: 'center', fontSize: '4rem', marginBottom: '1rem' }} />
                         Corporations: Come talk to us{' '}
                         <a href="https://discord.gg/BmZSy8xGmT" target="_blank" rel="noreferrer">
                             in EVE Metro Discord
