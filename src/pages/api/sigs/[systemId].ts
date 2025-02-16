@@ -25,7 +25,6 @@ export default protectedHandler()
         const session = req.session?.get(SESSION_KEY)
         if (session.character.level < 3) return res.status(403).end()
         const systemId = parseInt(req.query['systemId'] as string)
-        console.log(Object.keys(req.body).length)
         Object.keys(req.body).length === 0
             ? await deleteAllSignaturesFromSystem(systemId)
             : await deleteTrigSignature(systemId, req.body)

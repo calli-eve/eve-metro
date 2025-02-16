@@ -17,7 +17,6 @@ export const getSystemClassFromDatabase = (regionId: number | string): SystemCla
 }
 
 export const getSystemFactionFromDatabase = (solarSystemID: number | string): number => {
-    console.log(solarSystemID)
     return db
         .prepare('select factionID as factionId from mapSolarSystems where solarSystemID = ?')
         .get(solarSystemID)

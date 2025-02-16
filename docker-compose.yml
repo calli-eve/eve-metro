@@ -23,6 +23,7 @@ services:
         NEXT_PUBLIC_EVE_SSO_AUTH_HOST: ${NEXT_PUBLIC_EVE_SSO_AUTH_HOST}
         NEXT_PUBLIC_EVE_IMAGES_API_HOST: ${NEXT_PUBLIC_EVE_IMAGES_API_HOST}
         NEXT_PUBLIC_EVE_ESI_HOST: ${NEXT_PUBLIC_EVE_ESI_HOST}
+        NODE_ENV: production
         SDE_MOUNT_PATH: /var/lib/sde
     container_name: eve_metro
     restart: always
