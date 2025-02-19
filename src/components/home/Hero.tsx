@@ -39,11 +39,7 @@ const Hero = () => {
                         - Get anywhere in EVE in a matter of a few jumps
                     </div>
                     <div style={{ fontSize: '1rem', maxWidth: '40rem', textAlign: 'left' }}>
-                        -{' '}
-                        <a title="Click to copy corp name to clipboard" href="external-api">
-                            API available
-                        </a>{' '}
-                        - Talk to EVE metro team on discord
+                        - API available - Talk to EVE metro team on discord
                     </div>
                     <div
                         style={{
