@@ -136,14 +136,38 @@ const processOneWallet = async (session: Session) => {
             processed_date: DateTime.utc().toSQL()
         }
     })
-    const logEntriesNotProcessed = await insertPaymentsLogEntry(paymentLogEntries)
-    const newLogEntries = paymentLogEntries.filter((log) =>
-        logEntriesNotProcessed.some((id) => parseInt(id) !== log.id)
-    )
-    const newEntriesOverMonthlyThreshold = newLogEntries.filter((p) => p.amount >= MONTHLY_FEE)
-    if (newEntriesOverMonthlyThreshold.length === 0) return
 
+    // Get IDs of entries that haven't been processed yet
+    const unprocessedEntryIds: {id: string}[] = await insertPaymentsLogEntry(paymentLogEntries)
+    console.log(`Inserted ${unprocessedEntryIds.length} new entries:`, unprocessedEntryIds)
+    
+    // Filter for entries that ARE in the unprocessed list
+    const newLogEntries = paymentLogEntries.filter((log) => {
+        const logIdString = log.id.toString()
+        const isUnprocessed = unprocessedEntryIds.some(entry => entry.id === logIdString)
+        return isUnprocessed
+    })
+
+    console.log(`Found ${paymentLogEntries.length} total donations, ${newLogEntries.length} are new`)
+    
+    const newEntriesOverMonthlyThreshold = newLogEntries.filter((p) => {
+        const isOverThreshold = p.amount >= MONTHLY_FEE
+        if (!isOverThreshold) {
+            console.log(`Skipping payment ${p.id} from ${p.paying_id}: amount ${p.amount} below threshold ${MONTHLY_FEE}`)
+        }
+        return isOverThreshold
+    })
+
+    if (newEntriesOverMonthlyThreshold.length === 0) {
+        console.log('No new payments over monthly threshold found')
+        return
+    }
+
+    console.log(`Processing ${newEntriesOverMonthlyThreshold.length} payments over threshold`)
+    
+    // Process new users first
     await processNewUsers(newEntriesOverMonthlyThreshold)
+    // Then process existing users
     await processExistingUsers(newEntriesOverMonthlyThreshold)
 }
 
@@ -170,24 +194,35 @@ const processExistingUsers = async (logEntries: PaymentsLogEntry[]): Promise<voi
         const logEntry = logEntries[i]
         const currentEntryArray = await findMultipleAllowedEntities([logEntry.paying_id])
         if (currentEntryArray.length === 0) {
-            console.log('payment processing failed', logEntry)
+            console.log(`Payment processing skipped for ID ${logEntry.paying_id} - no existing entity found`, logEntry)
             continue
         }
+        
         const entity = currentEntryArray[0]
         const dateNow = DateTime.utc()
         const currentValidUntill = DateTime.fromJSDate(entity.valid_untill)
         const monthsToAdd = Math.floor(logEntry.amount / MONTHLY_FEE)
+        
+        console.log(`Processing payment for ${entity.entity_id}:`)
+        console.log(`  Amount: ${logEntry.amount} ISK`)
+        console.log(`  Current subscription valid until: ${currentValidUntill.toISO()}`)
+        console.log(`  Adding ${monthsToAdd} months (${logEntry.amount} / ${MONTHLY_FEE})`)
+        
         const newValidUntill =
             currentValidUntill < dateNow
                 ? dateNow.plus({ months: monthsToAdd })
                 : currentValidUntill.plus({ months: monthsToAdd })
+                
+        console.log(`  New subscription valid until: ${newValidUntill.toISO()}`)
+        
         await updateExpiryForAllowedEntity(entity.entity_id, newValidUntill.toSQL())
         await setPaymentsProcessed([logEntry.id], DateTime.utc().toSQL())
+        
         try {
-            sendTopupEmailToUser(entity.entity_id)
+            await sendTopupEmailToUser(entity.entity_id)
+            console.log(`  Sent topup email to ${entity.entity_id}`)
         } catch (e) {
-            console.log(e)
-            console.log('failed sending sending topup evemail')
+            console.log(`  Failed to send topup email to ${entity.entity_id}:`, e)
         }
     }
 }

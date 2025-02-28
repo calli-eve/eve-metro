@@ -29,7 +29,7 @@ export interface WalletWathcerEntry {
 
 export const insertPaymentsLogEntry = (
     paymentsLogEntries: PaymentsLogEntry[]
-): Promise<string[]> => {
+): Promise<{id: string}[]> => {
     return knex(PAYMENTS_LOG_TABLE).insert(paymentsLogEntries, 'id').onConflict('id').ignore()
 }
 
