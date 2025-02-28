@@ -171,7 +171,7 @@ const processExistingUsers = async (logEntries: PaymentsLogEntry[]): Promise<voi
         const currentEntryArray = await findMultipleAllowedEntities([logEntry.paying_id])
         if (currentEntryArray.length === 0) {
             console.log('payment processing failed', logEntry)
-            return
+            continue
         }
         const entity = currentEntryArray[0]
         const dateNow = DateTime.utc()
