@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import knex from '../../knex/knex'
+import { knex } from '../../knex/knex'
 import { TrigConnection } from '../types/types'
 
 const TRIG_CONNECTIONS_TABLE = 'trig_connections'

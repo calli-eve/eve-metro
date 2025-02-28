@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import knex from '../../knex/knex'
+import { knex } from '../../knex/knex'
 import { PochvenSignatureInput, PochvenSignatureOutput } from '../types/sigs'
 
 const TRIG_SIGNATURES_TABLE = 'trig_signatures'
