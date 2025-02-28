@@ -19,7 +19,7 @@ Best Regards,
 EVE Metro team
             `
     if (
-        process.env.ENVIRONMENT === 'development'
+        process.env.ENVIRONMENT !== 'production'
     ) {
         console.log('LostMail', body)
         return
@@ -65,7 +65,7 @@ Best Regards,
 EVE Metro team
 `
     if (
-        process.env.ENVIRONMENT === 'development'
+        process.env.ENVIRONMENT !== 'production'
     ) {
         console.log('TopupMail', body)
         return

@@ -47,3 +47,4 @@ jobs:
         POSTGRES_PASSWORD: postgres
         POSTGRES_DB: evemetro_test
         ENVIRONMENT: test # To prevent actual email sending 
+        NEXT_PUBLIC_EVE_ESI_HOST: "https://esi.evetech.net"
