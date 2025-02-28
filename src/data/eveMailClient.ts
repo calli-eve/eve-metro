@@ -55,9 +55,9 @@ EVE Metro team
 export const sendTopupEmailToUser = async (entity_id: number) => {
     const allowedEntity = await findMultipleAllowedEntities([entity_id])
     const character = await getCharacter(entity_id)
-    const body = `Thank you for using EVE Metro ${
+    const body = `Thank You for using EVE Metro ${
         character ? character.name : ''
-    }. Thank You for supporting EVE Metro project! Your payment has been processed. Access to https://evemetro.com has been granted and is now valid thru ${DateTime.fromJSDate(
+    }. Thank You for supporting EVE Metro project! Your payment has been processed. Access to https://evemetro.com is now valid thru ${DateTime.fromJSDate(
         allowedEntity[0].valid_untill
     ).toISODate()}.
 
@@ -84,7 +84,7 @@ EVE Metro team
                 recepient_character_id: entity_id,
                 body: `Thank you for using EVE Metro ${
                     char ? char.name : ''
-                }. Thank You for supporting EVE Metro project! Your payment has been processed. Access to https://evemetro.com has been granted and is now valid thru ${DateTime.fromJSDate(
+                }. Thank You for supporting EVE Metro project! Your payment has been processed. Access to https://evemetro.com is now valid thru ${DateTime.fromJSDate(
                     allowedEntity[0].valid_untill
                 ).toISODate()}.
 
