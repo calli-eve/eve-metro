@@ -1,6 +1,15 @@
 EVE Metro
 
+EVE Metro is CCPs EVE Online games Pochven region mapping service. Service is available at https://evemetro.com. It is a subscription based service where all the in game currencty (ISK) is pooled and divided to pilots scanning and mappin connections to provide a highway to all users.
 
+# Current team:
+- [Kybernauts](https://evewho.com/corporation/98644650) hosting and management
+- [Kylon Olgidar](https://evewho.com/character/2115520405) day to day operations
+- [Calli](https://evewho.com/character/1213492161) development
+
+## EVE Metro api
+
+API is available and code for it resides in (eve-metro-api)[https://github.com/calli-eve/eve-metro-api] repository. Contact the team for access.
 
 ## Cron Endpoints
 
