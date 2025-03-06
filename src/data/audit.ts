@@ -1,4 +1,4 @@
-import knex from '../../knex/knex'
+import { knex } from '../../knex/knex'
 
 export const AUDIT_LOG_TABLE = 'audit_log'
 
