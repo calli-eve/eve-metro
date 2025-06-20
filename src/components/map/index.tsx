@@ -17,6 +17,7 @@ import AddConnection from './AddConnection'
 import queryString from 'query-string'
 import Router from 'next/router'
 import { getCurrentLocation } from '../../data/esiClient'
+import StaticEmpireSystemsRouteOptimizer from './StaticEmpireSystemsRouteOptimizer'
 
 const { TextArea } = Input
 
@@ -246,7 +247,12 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                         )
                     })
                 )}
-                {session?.character?.level === 3 ? <AddConnection /> : <></>}
+                {session?.character?.level === 3 ? (
+                    <>
+                        <AddConnection />
+                        <StaticEmpireSystemsRouteOptimizer selectedSystem={selectedSystem} />
+                    </>
+                ) : null}
                 <hr style={{ borderTop: '1px solid #bbb', width: '100%' }}></hr>
                 {signatures.length === 0 ? (
                     <div>No signatures</div>
