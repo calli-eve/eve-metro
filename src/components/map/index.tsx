@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { Session } from '../../state/SessionContainer'
 import { Button, Tooltip, Modal, Input } from 'antd'
 import Graph from 'react-graph-vis'
@@ -8,7 +8,7 @@ import {
     LABEL_NODES,
     TRIG_SYSTEM_IDS
 } from '../../const'
-import { PochvenConnectionInput } from '../../types/types'
+import { PochvenConnectionInput, SimpleSystem } from '../../types/types'
 import { useWindowSize } from '../../hooks/WindowResizeHook'
 import { Connection, TrigResponse } from '../../types/trig'
 import { DeleteOutlined, IssuesCloseOutlined, UserOutlined } from '@ant-design/icons'
@@ -166,15 +166,18 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
         }
     }
 
-    const selectedSystemSignatures = (selectedSystem: number) => {
+    const selectedSystem = useMemo<SimpleSystem | undefined>(() => {
+        return trigStorage.systems.find((s) => s.solarSystemId === trigStorage.selectedSystem)
+    }, [trigStorage?.systems, trigStorage?.selectedSystem]);
+
+    const selectedSystemSignatures = () => {
         if (session?.character?.level < 2 || !trigStorage.trigData || !selectedSystem) return <></>
-        const selectedSystemSignatures: Connection[] = trigStorage.trigData.connections
+        const selectedSystemConnections: Connection[] = trigStorage.trigData.connections
             .filter(
-                (c: Connection) =>
-                    c.pochvenSystemId === selectedSystem || c.externalSystemId === selectedSystem
+                (c: Connection) => [c.pochvenSystemId, c.externalSystemId].includes(selectedSystem.solarSystemId)
             )
             .sort((a, b) => a.comment > b.comment)
-        const system = trigStorage.systems.find((s) => s.solarSystemId === selectedSystem)
+        const { solarSystemId } = selectedSystem;
         return (
             <div
                 style={{
@@ -189,14 +192,14 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                 }}>
                 <a
                     style={{ fontSize: '1.4rem' }}
-                    href={`https://zkillboard.com/system/${system.solarSystemId}/`}
+                    href={`https://zkillboard.com/system/${solarSystemId}/`}
                     target="_blank">
-                    {system.solarSystemName}
+                    {selectedSystem.solarSystemName}
                 </a>
-                {selectedSystemSignatures.length === 0 ? (
+                {selectedSystemConnections.length === 0 ? (
                     <div>No connections</div>
                 ) : (
-                    selectedSystemSignatures.map((s) => {
+                    selectedSystemConnections.map((s) => {
                         return (
                             <div
                                 key={s.comment}
@@ -206,7 +209,7 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                                     alignItems: 'center',
                                 }}>
                                 <div>
-                                    {s.pochvenSystemId === selectedSystem
+                                    {s.pochvenSystemId === solarSystemId
                                         ? s.comment
                                         : `${s.externalSignature} ${s.pochvenSystemName} ${s.externalWormholeType}`}
                                 </div>
@@ -266,7 +269,7 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                                             <Button
                                                 type="dashed"
                                                 shape="circle"
-                                                onClick={() => removeSignature(selectedSystem, s)}
+                                                onClick={() => removeSignature(solarSystemId, s)}
                                                 icon={<DeleteOutlined />}
                                             />
                                         </Tooltip>
@@ -289,7 +292,7 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                         <Button
                             style={{ marginLeft: '0.5rem' }}
                             onClick={() => {
-                                removeSignature(selectedSystem, undefined)
+                                removeSignature(solarSystemId, undefined)
                             }}>
                             Clear
                         </Button>
@@ -573,7 +576,7 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
     return (
         <div className={hidden ? 'map hide' : 'map'}>
             <div style={{ position: 'absolute', right: '1rem', top: '5rem', zIndex: 1 }}>
-                {selectedSystemSignatures(trigStorage.selectedSystem)}
+                {selectedSystemSignatures()}
                 <div style={{ marginTop: '1rem', border: 'solid 1px white', borderRadius: '10px', padding: '0.6rem', backgroundColor: '#260707' }}>
                     {!trackedCharacter ? (
                         <Button 
