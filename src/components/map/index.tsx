@@ -150,6 +150,8 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
             const systemId = event.nodes[0]
             if (systemId === trigStorage.selectedSystem) return
             const system = trigStorage.systems.find((s) => s.solarSystemId === systemId)
+            if (!system?.solarSystemName) return
+
             if (TRIG_SYSTEM_IDS.some((t) => t === systemId)) {
                 trigStorage.setSelectedSystem(systemId)
                 setSignatures([])
@@ -157,12 +159,9 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                 return
             }
             if (system.solarSystemName.match(/J[0-9]{1,6}$/)) {
-                window.open(`http://anoik.is/systems/${system.solarSystemName}`, '_ blank')
+                window.open(`http://anoik.is/systems/${system.solarSystemName}`, '_blank')
             } else {
-                window.open(
-                    `https://evemaps.dotlan.net/system/${system.solarSystemName}`,
-                    '_ blank'
-                )
+                window.open(`https://evemaps.dotlan.net/system/${system.solarSystemName}`, '_blank')
             }
         }
     }
@@ -183,17 +182,19 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                     border: 'solid 1px white',
                     borderRadius: '10px',
                     padding: '0.6rem',
-                    backgroundColor: '#260707'
+                    backgroundColor: '#260707',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.6rem'
                 }}>
                 <a
                     style={{ fontSize: '1.4rem' }}
-                    href={`https://zkillboard.com/system/${system.solarSystemId}/`}>
+                    href={`https://zkillboard.com/system/${system.solarSystemId}/`}
+                    target="_blank">
                     {system.solarSystemName}
                 </a>
                 {selectedSystemSignatures.length === 0 ? (
-                    <div style={{ marginBottom: '0.4rem', marginTop: '0.2rem' }}>
-                        No connections
-                    </div>
+                    <div>No connections</div>
                 ) : (
                     selectedSystemSignatures.map((s) => {
                         return (
@@ -203,8 +204,6 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
-                                    marginTop: '0.2rem',
-                                    marginBottom: '0.4rem'
                                 }}>
                                 <div>
                                     {s.pochvenSystemId === selectedSystem
@@ -245,7 +244,7 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                     })
                 )}
                 {session?.character?.level === 3 ? <AddConnection /> : <></>}
-                <hr style={{ borderTop: '1px solid #bbb' }}></hr>
+                <hr style={{ borderTop: '1px solid #bbb', width: '100%' }}></hr>
                 {signatures.length === 0 ? (
                     <div>No signatures</div>
                 ) : (
