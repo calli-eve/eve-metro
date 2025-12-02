@@ -1,6 +1,6 @@
 import { NextApiResponse } from 'next'
 import sharp from 'sharp'
-import xmldom from 'xmldom'
+import xmldom from '@xmldom/xmldom'
 
 import { ExtendedRequest, publicHandler } from '../../../middleware/request-handler'
 import cache from '../../../middleware/cache'
