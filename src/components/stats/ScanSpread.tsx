@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell, YAxis } from 
 import { HIGHSEC_GREEN, TRIGLAVIAN_RED } from '../../const'
 
 interface ScanSpreadItem {
-    value: number
+    value: string | number
     count: number
 }
 
@@ -29,7 +29,7 @@ const ScanSpread = () => {
                     [...Array(7).keys()].map((i) => {
                         const valueFromDb = res.find((r) => parseInt(r.value) === i + 1)
                         return {
-                            value: DateTime.local().set({ weekday: i + 1 }).toFormat('EEE'),
+                            value: DateTime.local().set({ weekday: (i + 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 }).toFormat('EEE'),
                             count: valueFromDb?.count ? parseInt(valueFromDb?.count) : 0
                         }
                     })

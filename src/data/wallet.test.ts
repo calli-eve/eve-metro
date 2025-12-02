@@ -10,9 +10,10 @@ jest.mock('./eveMailClient', () => ({
 }));
 
 describe('processPaymentLogEntries', () => {
-    const fixedDate = DateTime.fromISO('2024-03-07T12:00:00Z');
+    const fixedDate = DateTime.utc(2024, 3, 7, 12, 0, 0);
+
     beforeEach(() => {
-        jest.spyOn(DateTime, 'utc').mockReturnValue(fixedDate);
+        jest.spyOn(DateTime, 'utc').mockImplementation((() => fixedDate) as any);
     });
 
     afterEach(() => {
@@ -58,7 +59,7 @@ describe('processPaymentLogEntries', () => {
         expect(allowedEntity.level).toBe('2');
 
         // Verify validity period
-        const validUntil = DateTime.fromJSDate(allowedEntity.valid_untill);
+        const validUntil = DateTime.fromISO(allowedEntity.valid_untill);
         const expectedValidUntil = DateTime.utc().plus({ day: 7 }).plus({ months: 1 });
         expect(validUntil.toISODate()).toBe(expectedValidUntil.toISODate());
     });
@@ -105,7 +106,7 @@ describe('processPaymentLogEntries', () => {
         if(!existingEntity.valid_untill) throw new Error('Existing entity has no validity period');
 
         // Verify validity period was extended by 2 months
-        const validUntil = DateTime.fromJSDate(allowedEntity.valid_untill);
+        const validUntil = DateTime.fromISO(allowedEntity.valid_untill);
         const expectedValidUntil = DateTime.fromSQL(existingEntity.valid_untill).plus({ months: 2 });
         expect(validUntil.toISODate()).toBe(expectedValidUntil.toISODate());
 

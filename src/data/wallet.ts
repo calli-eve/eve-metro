@@ -178,7 +178,7 @@ const processExistingUsers = async (logEntries: PaymentsLogEntry[]): Promise<voi
         
         const entity = currentEntryArray[0]
         const dateNow = DateTime.utc()
-        const currentValidUntill = DateTime.fromJSDate(entity.valid_untill)
+        const currentValidUntill = DateTime.fromISO(entity.valid_untill)
         const monthsToAdd = Math.floor(logEntry.amount / MONTHLY_FEE)
         
         console.log(`Processing payment for ${entity.entity_id}:`)

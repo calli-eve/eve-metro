@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import { useEffect, useState } from 'react'
 import { getSystemKills, getSystemJumps } from '../../data/esiClient'
 import { getCopyPasteRoute } from '../../utils'
-import dayjs from 'dayjs'
+import { DateTime } from 'luxon'
 import { CalculateRouteInput } from '../../pathfinder/pathfinder'
 import { ShipSize, RouteSystem, SimpleSystem, SimpleSystemWithKills } from '../../types/types'
 import { fetchPath, fetchSystems } from './utils'
@@ -65,7 +65,7 @@ const PathCalculator = () => {
         const newRoute: CalculatedRoute = {
             route: route,
             error: route.length > 0 ? undefined : 'No route',
-            timestamp: dayjs().format('YYYY-MM-DD HH:mm'),
+            timestamp: DateTime.now().toFormat('yyyy-MM-dd HH:mm'),
             shipSize: 'Frigate'
         }
         setRoutes([newRoute, ...routes.slice(0, 1)])

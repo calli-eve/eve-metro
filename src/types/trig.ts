@@ -18,7 +18,7 @@ export interface Connection {
     massCritical: boolean
     timeCritical: boolean
     comment?: string
-    timeCriticalTime?: Date
+    timeCriticalTime?: string
     already_expired_reports?: [
         {
             time: string

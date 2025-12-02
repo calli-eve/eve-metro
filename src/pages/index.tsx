@@ -38,10 +38,12 @@ const Index = () => {
     const tabItems = [
         {
             key: '0',
+            label: '',
             children: <Home />
         },
         {
             key: '1',
+            label: '',
             className: 'frame',
             style: { overflow: 'hidden' },
             children: (
@@ -55,6 +57,7 @@ const Index = () => {
         },
         {
             key: '2',
+            label: '',
             style: { padding: '1rem 0.5rem' },
             children: (
                 <Row justify="center" align="top">
@@ -68,6 +71,7 @@ const Index = () => {
         },
         {
             key: '3',
+            label: '',
             style: { padding: '1rem 0.5rem' },
             children: (
                 <Row justify="center" align="top">
@@ -81,6 +85,7 @@ const Index = () => {
         },
         {
             key: '4',
+            label: '',
             style: { padding: '1rem 0.5rem' },
             children: (
                 <Row justify="center" align="top">
@@ -94,6 +99,7 @@ const Index = () => {
         },
         {
             key: '5',
+            label: '',
             style: { padding: '1rem 0.5rem' },
             children: (
                 <Row justify="center" align="top">
