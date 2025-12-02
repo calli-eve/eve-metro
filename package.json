@@ -12,9 +12,8 @@
         "knex-migrate": "knex migrate:latest",
         "prettier-fix": "prettier --write ./**/*.{js,ts,tsx,css,md}",
         "prettier-check": "prettier --check ./**/*.{js,ts,tsx,css,md}",
-        "test": "jest",
         "test:integration": "jest --config jest.integration.config.js --detectOpenHandles",
-        "test:watch": "jest --watch"
+        "test:watch": "jest --config jest.integration.config.js --detectOpenHandles --watch"
     },
     "dependencies": {
         "@xmldom/xmldom": "^0.8.11",

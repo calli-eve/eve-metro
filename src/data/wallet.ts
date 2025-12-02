@@ -34,6 +34,9 @@ export interface WalletWathcerEntry {
 export const insertPaymentsLogEntry = (
     paymentsLogEntries: PaymentsLogEntry[]
 ): Promise<{id: string}[]> => {
+    if (paymentsLogEntries.length === 0) {
+        return Promise.resolve([])
+    }
     return knex(PAYMENTS_LOG_TABLE).insert(paymentsLogEntries, 'id').onConflict('id').ignore()
 }
 

@@ -35,6 +35,9 @@ export const insertAllowedEntity = (allowedEntity: AllowedEntity) => {
 export const insertAllowedEntityBatch = (
     allowedEntityBatch: AllowedEntity[]
 ): Promise<number[]> => {
+    if (allowedEntityBatch.length === 0) {
+        return Promise.resolve([])
+    }
     return knex(ALLOWED_ENTITY_TABLE)
         .insert(allowedEntityBatch)
         .returning('entity_id')
