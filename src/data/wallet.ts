@@ -175,34 +175,54 @@ const processExistingUsers = async (logEntries: PaymentsLogEntry[]): Promise<voi
             console.log(`Payment processing skipped for ID ${logEntry.paying_id} - no existing entity found`, logEntry)
             continue
         }
-        
+
         const entity = currentEntryArray[0]
         const dateNow = DateTime.utc()
-        const currentValidUntill = DateTime.fromISO(entity.valid_untill)
         const monthsToAdd = Math.floor(logEntry.amount / MONTHLY_FEE)
-        
+
         console.log(`Processing payment for ${entity.entity_id}:`)
         console.log(`  Amount: ${logEntry.amount} ISK`)
-        console.log(`  Current subscription valid until: ${currentValidUntill.toISO()}`)
+        console.log(`  Current subscription valid until: ${entity.valid_untill}`)
         console.log(`  Adding ${monthsToAdd} months (${logEntry.amount} / ${MONTHLY_FEE})`)
-        
-        const newValidUntill =
-            currentValidUntill < dateNow
-                ? dateNow.plus({ months: monthsToAdd })
-                : currentValidUntill.plus({ months: monthsToAdd })
-                
+
+        // Handle case where valid_untill might be null, a Date object, or an ISO string
+        // Note: Database returns timestamps as Date objects, but type definition says string
+        let newValidUntill: DateTime
+        if (!entity.valid_untill) {
+            // No existing expiry, start from now
+            newValidUntill = dateNow.plus({ months: monthsToAdd })
+        } else {
+            // Convert valid_untill to DateTime (handle both Date objects and ISO strings)
+            const validUntillValue = entity.valid_untill as string | Date
+            const currentValidUntill = validUntillValue instanceof Date
+                ? DateTime.fromJSDate(validUntillValue)
+                : DateTime.fromISO(validUntillValue)
+
+            if (!currentValidUntill.isValid) {
+                // Invalid date, start from now
+                console.log(`  Warning: Invalid valid_untill date, starting from current date`)
+                newValidUntill = dateNow.plus({ months: monthsToAdd })
+            } else {
+                // Valid date - extend from current date if expired, otherwise extend from expiry
+                newValidUntill =
+                    currentValidUntill < dateNow
+                        ? dateNow.plus({ months: monthsToAdd })
+                        : currentValidUntill.plus({ months: monthsToAdd })
+            }
+        }
+
         console.log(`  New subscription valid until: ${newValidUntill.toISO()}`)
-        
+
         const newValidUntillSQL = newValidUntill.toSQL({ includeOffset: false });
         if (!newValidUntillSQL) throw new Error('Failed to generate new valid_until date');
-        
+
         await updateExpiryForAllowedEntity(entity.entity_id, newValidUntillSQL)
-        
+
         const processedDate = DateTime.utc().toSQL({ includeOffset: false });
         if (!processedDate) throw new Error('Failed to generate processed date');
-        
+
         await setPaymentsProcessed([logEntry.id], processedDate)
-        
+
         try {
             await sendTopupEmailToUser(entity.entity_id)
             console.log(`  Sent topup email to ${entity.entity_id}`)

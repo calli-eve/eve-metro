@@ -59,7 +59,10 @@ describe('processPaymentLogEntries', () => {
         expect(allowedEntity.level).toBe('2');
 
         // Verify validity period
-        const validUntil = DateTime.fromISO(allowedEntity.valid_untill);
+        // Handle case where valid_untill might be a Date object or ISO string from database
+        const validUntil = allowedEntity.valid_untill instanceof Date
+            ? DateTime.fromJSDate(allowedEntity.valid_untill)
+            : DateTime.fromISO(allowedEntity.valid_untill);
         const expectedValidUntil = DateTime.utc().plus({ day: 7 }).plus({ months: 1 });
         expect(validUntil.toISODate()).toBe(expectedValidUntil.toISODate());
     });
@@ -106,7 +109,9 @@ describe('processPaymentLogEntries', () => {
         if(!existingEntity.valid_untill) throw new Error('Existing entity has no validity period');
 
         // Verify validity period was extended by 2 months
-        const validUntil = DateTime.fromISO(allowedEntity.valid_untill);
+        const validUntil = allowedEntity.valid_untill instanceof Date
+            ? DateTime.fromJSDate(allowedEntity.valid_untill)
+            : DateTime.fromISO(allowedEntity.valid_untill);
         const expectedValidUntil = DateTime.fromSQL(existingEntity.valid_untill).plus({ months: 2 });
         expect(validUntil.toISODate()).toBe(expectedValidUntil.toISODate());
 

@@ -55,11 +55,19 @@ EVE Metro team
 export const sendTopupEmailToUser = async (entity_id: number) => {
     const allowedEntity = await findMultipleAllowedEntities([entity_id])
     const character = await getCharacter(entity_id)
+
+    // Handle valid_untill being either a Date object or ISO string from database
+    const validUntill = allowedEntity[0].valid_untill
+    const validUntillValue = validUntill as string | Date | undefined
+    const validUntillDate = validUntillValue instanceof Date
+        ? DateTime.fromJSDate(validUntillValue)
+        : validUntillValue
+        ? DateTime.fromISO(validUntillValue)
+        : null
+
     const body = `Thank You for using EVE Metro ${
         character ? character.name : ''
-    }. Thank You for supporting EVE Metro project! Your payment has been processed. Access to https://evemetro.com is now valid thru ${DateTime.fromISO(
-        allowedEntity[0].valid_untill
-    ).toISODate()}.
+    }. Thank You for supporting EVE Metro project! Your payment has been processed. Access to https://evemetro.com is now valid thru ${validUntillDate?.toISODate() ?? 'N/A'}.
 
 Best Regards,
 EVE Metro team
@@ -84,9 +92,7 @@ EVE Metro team
                 recepient_character_id: entity_id,
                 body: `Thank you for using EVE Metro ${
                     char ? char.name : ''
-                }. Thank You for supporting EVE Metro project! Your payment has been processed. Access to https://evemetro.com is now valid thru ${DateTime.fromISO(
-                    allowedEntity[0].valid_untill
-                ).toISODate()}.
+                }. Thank You for supporting EVE Metro project! Your payment has been processed. Access to https://evemetro.com is now valid thru ${validUntillDate?.toISODate() ?? 'N/A'}.
 
 Best Regards,
 EVE Metro team

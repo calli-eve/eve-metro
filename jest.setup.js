@@ -1,3 +1,11 @@
+// Load environment variables for tests
+require('dotenv').config();
+
+// Set test environment variables if not present
+if (!process.env.COOKIE_CRYPT_KEY) {
+    process.env.COOKIE_CRYPT_KEY = 'test-encryption-key-for-jest';
+}
+
 // Increase timeout for integration tests
 jest.setTimeout(30000);
 
