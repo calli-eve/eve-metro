@@ -12,7 +12,7 @@ import { Session } from '../../state/SessionContainer'
 import CharRow from '../admin/CharRow'
 import { Connection } from '../../types/trig'
 import { calcRoute } from '../../data/esiClient'
-import { TABLE_BREAKPOINT } from '../../const'
+import { TABLE_BREAKPOINT, TRIG_SYSTEM_IDS } from '../../const'
 import { SortOrder } from 'antd/lib/table/interface'
 
 const getDiffUntillDeath = (record: TrigConnection): { diffHours: number; diffMinutes: number } => {
@@ -56,15 +56,21 @@ const WormholeTable = ({ fetchRoutes }) => {
         if (!trigStorage.trigData || !selectedSystem || !fetchRoutes) return
 
         const jumpsPromises = Promise.allSettled<{ start: number; jumps: string }[]>(
-            trigStorage.trigData.connections.map(async (connection: Connection) => {
-                return {
-                    start: connection.externalSystemId,
-                    jumps: await calcRoute(
-                        selectedSystem.solarSystemId,
-                        connection.externalSystemId
-                    )
-                }
-            })
+            trigStorage.trigData.connections
+                .filter((connection: Connection) => {
+                    const isWormhole = connection.externalSystemName?.match(/J[0-9]{6}$/) || connection.externalSystemName === 'Thera'
+                    const isPochven = TRIG_SYSTEM_IDS.includes(connection.externalSystemId as number)
+                    return !isWormhole && !isPochven
+                })
+                .map(async (connection: Connection) => {
+                    return {
+                        start: connection.externalSystemId,
+                        jumps: await calcRoute(
+                            selectedSystem.solarSystemId,
+                            connection.externalSystemId
+                        )
+                    }
+                })
         )
 
         jumpsPromises.then((res) => {
