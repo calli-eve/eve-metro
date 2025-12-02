@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Table, Image, Typography, Dropdown, Menu, Input } from 'antd'
+import { Table, Image, Typography, Dropdown, Input } from 'antd'
 import { DownOutlined } from '@ant-design/icons'
 import {
     ESIAlliance,
@@ -40,17 +40,16 @@ const AdminTable = () => {
         }).then(() => fetchAllowedList())
     }
 
-    const menu = (record: ExtendedAllowedEntity) => (
-        <Menu>
-            <Menu.Item
-                onClick={() => {
-                    removeAllowed({ ...record })
-                }}
-                danger>
-                Delete
-            </Menu.Item>
-        </Menu>
-    )
+    const menuItems = (record: ExtendedAllowedEntity) => [
+        {
+            key: 'delete',
+            label: 'Delete',
+            danger: true,
+            onClick: () => {
+                removeAllowed({ ...record })
+            }
+        }
+    ]
 
     const columnsAdmin = [
         {
@@ -101,7 +100,7 @@ const AdminTable = () => {
         {
             key: 'action',
             render: (_: unknown, record: ExtendedAllowedEntity) => (
-                <Dropdown overlay={menu(record)}>
+                <Dropdown menu={{ items: menuItems(record) }}>
                     <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
                         Modify <DownOutlined />
                     </a>

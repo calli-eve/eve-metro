@@ -1,4 +1,4 @@
-import { Breakpoint } from 'antd/lib/_util/responsiveObserve'
+import type { Breakpoint } from 'antd'
 
 export const MONTHLY_FEE = 50000000
 

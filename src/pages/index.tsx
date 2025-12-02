@@ -12,7 +12,6 @@ import Legend from '../components/map/Legend'
 import { Session } from '../state/SessionContainer'
 import Stats from '../components/stats'
 import Home from '../components/home'
-import Item from 'antd/lib/list/Item'
 
 const { Header, Content } = Layout
 
@@ -36,59 +35,85 @@ const Index = () => {
         session.fetchCharacter().then().catch(console.log)
     }, [])
 
+    const tabItems = [
+        {
+            key: '0',
+            children: <Home />
+        },
+        {
+            key: '1',
+            className: 'frame',
+            style: { overflow: 'hidden' },
+            children: (
+                <>
+                    <Legend />
+                    <div style={{ height: '95vh', overflow: 'hidden' }}>
+                        <Map />
+                    </div>
+                </>
+            )
+        },
+        {
+            key: '2',
+            style: { padding: '1rem 0.5rem' },
+            children: (
+                <Row justify="center" align="top">
+                    <Col span={2} />
+                    <Col span={20} style={{ maxWidth: '1400px' }}>
+                        <WormholeTable fetchRoutes={activeKey === '2'} />
+                    </Col>
+                    <Col span={2} />
+                </Row>
+            )
+        },
+        {
+            key: '3',
+            style: { padding: '1rem 0.5rem' },
+            children: (
+                <Row justify="center" align="top">
+                    <Col span={2} />
+                    <Col span={20} style={{ maxWidth: '1400px' }}>
+                        <PathFinder />
+                    </Col>
+                    <Col span={2} />
+                </Row>
+            )
+        },
+        {
+            key: '4',
+            style: { padding: '1rem 0.5rem' },
+            children: (
+                <Row justify="center" align="top">
+                    <Col span={2} />
+                    <Col span={20} style={{ maxWidth: '1400px' }}>
+                        <Stats />
+                    </Col>
+                    <Col span={2} />
+                </Row>
+            )
+        },
+        {
+            key: '5',
+            style: { padding: '1rem 0.5rem' },
+            children: (
+                <Row justify="center" align="top">
+                    <Col span={2} />
+                    <Col span={20} style={{ maxWidth: '1400px' }}>
+                        <AdminTable />
+                    </Col>
+                    <Col span={2} />
+                </Row>
+            )
+        }
+    ]
+
     return (
         <Layout className="layout">
             <Header className="header flex-end">
                 <TobBar activeKey={activeKey} setActiveKey={onChangeTab} />
             </Header>
             <Content className="content">
-                <Tabs activeKey={activeKey} renderTabBar={() => <></>}>
-                    <Item key="0">
-                        <Home />
-                    </Item>
-                    <Item key="1" className="frame" style={{ overflow: 'hidden' }}>
-                        <Legend />
-                        <div style={{ height: '95vh', overflow: 'hidden' }}>
-                            <Map />
-                        </div>
-                    </Item>
-                    <Item key="2" style={{ padding: '1rem 0.5rem' }}>
-                        <Row justify="center" align="top">
-                            <Col span={2} />
-                            <Col span={20} style={{ maxWidth: '1400px' }}>
-                                <WormholeTable fetchRoutes={activeKey === '2'} />
-                            </Col>
-                            <Col span={2} />
-                        </Row>
-                    </Item>
-                    <Item key="3" style={{ padding: '1rem 0.5rem' }}>
-                        <Row justify="center" align="top">
-                            <Col span={2} />
-                            <Col span={20} style={{ maxWidth: '1400px' }}>
-                                <PathFinder />
-                            </Col>
-                            <Col span={2} />
-                        </Row>
-                    </Item>
-                    <Item key="4" style={{ padding: '1rem 0.5rem' }}>
-                        <Row justify="center" align="top">
-                            <Col span={2} />
-                            <Col span={20} style={{ maxWidth: '1400px' }}>
-                                <Stats />
-                            </Col>
-                            <Col span={2} />
-                        </Row>
-                    </Item>
-                    <Item key="5" style={{ padding: '1rem 0.5rem' }}>
-                        <Row justify="center" align="top">
-                            <Col span={2} />
-                            <Col span={20} style={{ maxWidth: '1400px' }}>
-                                <AdminTable />
-                            </Col>
-                            <Col span={2} />
-                        </Row>
-                    </Item>
-                </Tabs>
+                <Tabs activeKey={activeKey} renderTabBar={() => <></>} items={tabItems} />
             </Content>
         </Layout>
     )

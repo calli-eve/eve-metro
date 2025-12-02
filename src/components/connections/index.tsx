@@ -1,4 +1,4 @@
-import { Table, Menu, Dropdown, Button, Tooltip, Checkbox, Select } from 'antd'
+import { Table, Dropdown, Button, Tooltip, Checkbox, Select } from 'antd'
 import { DownOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons'
 import { DateTime } from 'luxon'
 
@@ -82,41 +82,46 @@ const WormholeTable = ({ fetchRoutes }) => {
         })
     }, [trigStorage.trigData, selectedSystem])
 
-    const menu = (record: TrigConnection) => {
-        return (
-            <Menu>
-                <Menu.Item
-                    onClick={() => {
-                        setSelectedForEdit(
-                            trigStorage.trigData.connections?.find((t) => t.id === record.id)
-                        )
-                    }}>
-                    Edit
-                </Menu.Item>
-                <Menu.Item
-                    onClick={() => {
-                        removeConnection({ connectionId: record.id })
-                    }}
-                    danger>
-                    Delete
-                </Menu.Item>
-                {getDiffUntillDeath(record).diffHours < 4 ||
-                    (!record.timeCritical && (
-                        <Menu.Item
-                            onClick={() => {
-                                setConnectionCritical({ connectionId: record.id })
-                            }}>
-                            Set time critical
-                        </Menu.Item>
-                    ))}
-                <Menu.Item
-                    onClick={() => {
-                        resetConnectionExpired(record)
-                    }}>
-                    Reset connection expired
-                </Menu.Item>
-            </Menu>
-        )
+    const menuItems = (record: TrigConnection) => {
+        const items = [
+            {
+                key: 'edit',
+                label: 'Edit',
+                onClick: () => {
+                    setSelectedForEdit(
+                        trigStorage.trigData.connections?.find((t) => t.id === record.id)
+                    )
+                }
+            },
+            {
+                key: 'delete',
+                label: 'Delete',
+                danger: true,
+                onClick: () => {
+                    removeConnection({ connectionId: record.id })
+                }
+            }
+        ]
+
+        if (getDiffUntillDeath(record).diffHours < 4 || !record.timeCritical) {
+            items.push({
+                key: 'set-critical',
+                label: 'Set time critical',
+                onClick: () => {
+                    setConnectionCritical({ connectionId: record.id })
+                }
+            })
+        }
+
+        items.push({
+            key: 'reset-expired',
+            label: 'Reset connection expired',
+            onClick: () => {
+                resetConnectionExpired(record)
+            }
+        })
+
+        return items
     }
 
     const copyPasta = (record: TrigConnection, pochvenSide: boolean) => {
@@ -259,7 +264,7 @@ const WormholeTable = ({ fetchRoutes }) => {
         {
             key: 'action',
             render: (_: unknown, record: TrigConnection) => (
-                <Dropdown overlay={menu(record)}>
+                <Dropdown menu={{ items: menuItems(record) }}>
                     <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
                         Modify <DownOutlined />
                     </a>

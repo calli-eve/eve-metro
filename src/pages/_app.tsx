@@ -1,6 +1,6 @@
 import Head from 'next/head'
+import { ConfigProvider } from 'antd'
 
-import 'antd/dist/antd.css'
 import '../styles/global.css'
 import { Session, useSession } from '../state/SessionContainer'
 import { TrigData, useTrigData } from '../state/TrigDataContainer'
@@ -35,12 +35,21 @@ const _APP = ({ Component, pageProps }) => {
                     data-domain="evemetro.com"
                     src="https://plausible.io/js/script.js"></script>
             </Head>
-            <Session.Provider value={session}>
-                <TrigData.Provider value={trigData}>
-                    <Component {...pageProps} />
-                </TrigData.Provider>
-                <Toaster />
-            </Session.Provider>
+            <ConfigProvider
+                theme={{
+                    token: {
+                        fontFamily: "'Shentox', sans-serif",
+                        colorBgContainerDisabled: 'rgba(255, 255, 255, 0.08)',
+                        colorTextDisabled: 'rgba(255, 255, 255, 0.25)'
+                    }
+                }}>
+                <Session.Provider value={session}>
+                    <TrigData.Provider value={trigData}>
+                        <Component {...pageProps} />
+                    </TrigData.Provider>
+                    <Toaster />
+                </Session.Provider>
+            </ConfigProvider>
         </>
     )
 }
