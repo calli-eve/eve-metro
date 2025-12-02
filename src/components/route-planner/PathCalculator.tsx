@@ -147,7 +147,6 @@ const PathCalculator = () => {
                         setStartSystem(systems.find((s) => s.solarSystemId === value))
                     }}
                     filterOption={(input, option) => {
-                        console.log(option)
                         return (
                             option.children
                                 .toString()
