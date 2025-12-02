@@ -5,19 +5,18 @@ import Graph from 'react-graph-vis'
 import { DateTime } from 'luxon'
 import { TrigData } from '../../state/TrigDataContainer'
 import {
-    CONNECTS_TO_AMARR_IDS,
-    CONNECTS_TO_CALDARI_IDS,
-    CONNECTS_TO_GALLENTE_IDS,
-    CONNECTS_TO_MINMATAR_IDS,
     LABEL_NODES,
     TRIG_SYSTEM_IDS
 } from '../../const'
 import { PochvenConnectionInput } from '../../types/types'
 import { useWindowSize } from '../../hooks/WindowResizeHook'
-import { Connection, Node, TrigResponse } from '../../types/trig'
-import { DeleteOutlined, IssuesCloseOutlined } from '@ant-design/icons'
+import { Connection, TrigResponse } from '../../types/trig'
+import { DeleteOutlined, IssuesCloseOutlined, UserOutlined } from '@ant-design/icons'
 import { PochvenSignatureInput } from '../../types/sigs'
 import AddConnection from './AddConnection'
+import queryString from 'query-string'
+import Router from 'next/router'
+import { getCurrentLocation } from '../../data/esiClient'
 
 const { TextArea } = Input
 
@@ -34,13 +33,6 @@ const edgeColor = (c: Connection) => {
     return diffHours < 4 ? 'red' : '#9d9d9e'
 }
 
-const borderColor = (c: Node): string => {
-    if (CONNECTS_TO_AMARR_IDS.some((i) => i === c.id)) return 'yellow'
-    if (CONNECTS_TO_CALDARI_IDS.some((i) => i === c.id)) return 'blue'
-    if (CONNECTS_TO_MINMATAR_IDS.some((i) => i === c.id)) return 'orange'
-    if (CONNECTS_TO_GALLENTE_IDS.some((i) => i === c.id)) return 'lightgreen'
-}
-
 const edgeDashes = (c: Connection) => {
     if (c?.already_expired_reports?.length > 0) return true
     return false
@@ -53,8 +45,9 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
     const isSpesialist = session?.character?.level > 2
     const [signatures, setSignatures] = useState<PochvenSignatureInput[]>([])
     const [isModalVisible, setIsModalVisible] = useState(false)
-
-    const [prevSelectedSystem, setPrevSelectedSystem] = useState<number>(undefined)
+    const [trackedCharacter, setTrackedCharacter] = useState<any>(null)
+    const [trackedLocation, setTrackedLocation] = useState<number | null>(null)
+    const [locationPollInterval, setLocationPollInterval] = useState<NodeJS.Timeout | null>(null)
 
     const [width, height] = useWindowSize()
 
@@ -131,6 +124,20 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
         }, 500)
     }, [map])
 
+    useEffect(() => {
+        // Check for stored tracking session
+        const storedSession = localStorage.getItem('trackingSession')
+        if (storedSession) {
+            try {
+                const session = JSON.parse(storedSession)
+                startTracking(session)
+            } catch (error) {
+                console.error('Error parsing stored session:', error)
+                localStorage.removeItem('trackingSession')
+            }
+        }
+    }, [])
+
     const events = {
         select: (event) => {
             if (!session.character || session?.character?.level < 2) {
@@ -144,7 +151,6 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
             if (systemId === trigStorage.selectedSystem) return
             const system = trigStorage.systems.find((s) => s.solarSystemId === systemId)
             if (TRIG_SYSTEM_IDS.some((t) => t === systemId)) {
-                setPrevSelectedSystem(trigStorage.selectedSystem)
                 trigStorage.setSelectedSystem(systemId)
                 setSignatures([])
                 fetchSignatures(systemId)
@@ -257,7 +263,7 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                                 <div style={{ width: '100%', marginLeft: '0.5rem' }}>{s.name}</div>
                                 {isSpesialist ? (
                                     <div style={{ marginLeft: '0.5rem' }}>
-                                        <Tooltip title="Delete connection">
+                                        <Tooltip title="Delete signature">
                                             <Button
                                                 type="dashed"
                                                 shape="circle"
@@ -460,12 +466,14 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                 ...trigData.nodes.map((node) => {
                     const isTrigSystem = TRIG_SYSTEM_IDS.some((id) => node.id === id)
                     const factionIconLink = resolveImageLink(node.id)
+                    const isTrackedLocation = trackedLocation && node.id === trackedLocation
+                    
                     return {
                         ...node,
                         title: nodeTooltip(node),
                         shape: isTrigSystem ? 'box' : factionIconLink ? 'circularImage' : 'dot',
                         image: !isTrigSystem && factionIconLink ? factionIconLink : undefined,
-                        size: 25,
+                        size: isTrackedLocation ? 30 : 25,
                         widthConstraint: { minimum: isTrigSystem ? 130 : 80 },
                         heightConstraint: { minimum: isTrigSystem ? 50 : 10 },
                         shadow: {
@@ -473,10 +481,10 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                             color: node.color,
                             size: 30
                         },
-                        borderWidth: 1,
+                        borderWidth: isTrackedLocation ? 3 : 1,
                         color: {
                             background: node.color,
-                            border: 'black',
+                            border: isTrackedLocation ? 'yellow' : 'black',
                             highlight: {
                                 background: node.color,
                                 border: 'white'
@@ -512,10 +520,89 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
         }
     }
 
+    const eveSsoLogin = () => {
+        const ssoUrl = `${process.env.NEXT_PUBLIC_EVE_SSO_AUTH_HOST}/v2/oauth/authorize/?`
+        const state = Math.random().toString(36).substring(1)
+        const request = {
+            response_type: 'code',
+            redirect_uri: `${process.env.NEXT_PUBLIC_DOMAIN}/redirect`,
+            client_id: process.env.NEXT_PUBLIC_EVE_SSO_ID,
+            scope: 'esi-location.read_location.v1',
+            state
+        }
+
+        const stringified = queryString.stringify(request)
+        sessionStorage.setItem('savedState', state)
+        sessionStorage.setItem('trackingLogin', 'true')
+        Router.push(`${ssoUrl}${stringified}`)
+    }
+
+    const startTracking = async (characterSession: any) => {
+        setTrackedCharacter(characterSession)
+        // Start polling location every 10 seconds
+        const interval = setInterval(async () => {
+            try {
+                const location = await getCurrentLocation(characterSession)
+                if (location) {
+                    setTrackedLocation(location.solar_system_id)
+                }
+            } catch (error) {
+                console.error('Error fetching location:', error)
+                stopTracking()
+            }
+        }, 10000)
+        setLocationPollInterval(interval)
+    }
+
+    const stopTracking = () => {
+        if (locationPollInterval) {
+            clearInterval(locationPollInterval)
+            setLocationPollInterval(null)
+        }
+        setTrackedCharacter(null)
+        setTrackedLocation(null)
+    }
+
+    useEffect(() => {
+        return () => {
+            if (locationPollInterval) {
+                clearInterval(locationPollInterval)
+            }
+        }
+    }, [locationPollInterval])
+
     return (
         <div className={hidden ? 'map hide' : 'map'}>
             <div style={{ position: 'absolute', right: '1rem', top: '5rem', zIndex: 1 }}>
                 {selectedSystemSignatures(trigStorage.selectedSystem)}
+                <div style={{ marginTop: '1rem', border: 'solid 1px white', borderRadius: '10px', padding: '0.6rem', backgroundColor: '#260707' }}>
+                    {!trackedCharacter ? (
+                        <Button 
+                            icon={<UserOutlined />} 
+                            onClick={eveSsoLogin}
+                            style={{ width: '100%' }}
+                        >
+                            Track Character
+                        </Button>
+                    ) : (
+                        <div>
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                Tracking: {trackedCharacter.character.CharacterName}
+                            </div>
+                            {trackedLocation && (
+                                <div>
+                                    Location: {trigStorage.systems.find(s => s.solarSystemId === trackedLocation)?.solarSystemName}
+                                </div>
+                            )}
+                            <Button 
+                                onClick={stopTracking}
+                                style={{ width: '100%', marginTop: '0.5rem' }}
+                            >
+                                Stop Tracking
+                            </Button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {trigStorage.trigData ? (

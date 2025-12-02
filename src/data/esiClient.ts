@@ -192,7 +192,7 @@ export interface ESICharacterLocation {
     station_id: number
 }
 
-export async function getCurrentLocation(session: Session): Promise<ESICharacterLocation[]> {
+export async function getCurrentLocation(session: Session): Promise<ESICharacterLocation> {
     return await fetch(
         `${process.env.NEXT_PUBLIC_EVE_ESI_HOST}/characters/${session.character.CharacterID}/location`,
         {

@@ -7,18 +7,41 @@ const RedirectSession = ({ code, state }) => {
 
     useEffect(() => {
         const savedState = sessionStorage.getItem('savedState')
+        const isTrackingLogin = sessionStorage.getItem('trackingLogin')
+        
         if (code && state && savedState === state) {
             sessionStorage.removeItem('savedState')
-            fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ code: code })
-            })
-                .then()
-                .finally(() => router.push('/'))
+            
+            if (isTrackingLogin) {
+                // Handle tracking login
+                sessionStorage.removeItem('trackingLogin')
+                fetch('/api/auth/tracking-login', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ code: code })
+                })
+                    .then(res => res.json())
+                    .then(session => {
+                        // Store tracking session in localStorage
+                        localStorage.setItem('trackingSession', JSON.stringify(session))
+                    })
+                    .finally(() => router.push('/'))
+            } else {
+                // Handle regular login
+                fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ code: code })
+                })
+                    .then()
+                    .finally(() => router.push('/'))
+            }
         } else {
             router.push('/')
         }
