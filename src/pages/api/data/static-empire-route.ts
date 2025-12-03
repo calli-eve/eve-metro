@@ -3,7 +3,7 @@ import {
     ELIGIBLE_POCHVEN_C729_SYSTEMS,
     SESSION_KEY
 } from '../../../const'
-import { ExtendedRequest, ExtendedSessionRequest, protectedHandler } from '../../../middleware/request-handler'
+import { ExtendedRequest, protectedHandler } from '../../../middleware/request-handler'
 import { allTrigSignaturesForSystem } from '../../../data/signatures'
 
 export default protectedHandler()

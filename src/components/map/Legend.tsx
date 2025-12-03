@@ -23,7 +23,6 @@ const Legend = () => {
             className="legend"
             style={{
                 display: 'flex',
-                marginTop: '1rem',
                 flexDirection: 'column',
                 zIndex: '10' as unknown as number
             }}>
@@ -91,7 +90,7 @@ const Legend = () => {
                     border-radius: 24px;
                 }
                 .legend {
-                    position: absolute;
+                    position: fixed;
                     left: 1rem;
                     max-height: 2rem;
                 }

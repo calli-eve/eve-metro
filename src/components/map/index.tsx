@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { Session } from '../../state/SessionContainer'
 import { Button, Tooltip, Modal, Input } from 'antd'
 import Graph from 'react-graph-vis'
@@ -17,9 +17,315 @@ import AddConnection from './AddConnection'
 import queryString from 'query-string'
 import Router from 'next/router'
 import { getCurrentLocation } from '../../data/esiClient'
-import StaticEmpireSystemsRouteOptimizer from './StaticEmpireSystemsRouteOptimizer'
+
+/* API helpers */
+const postSignatures = async (systemId: number, signatures: PochvenSignatureInput[]) => {
+    try {
+        return await fetch(`/api/sigs/${systemId}`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-store'
+            },
+            body: JSON.stringify(signatures)
+        })
+    } catch (e) {
+        return console.error(e)
+    }
+}
+
+const deleteSignature = async (systemId: number, signature: PochvenSignatureInput | undefined) => {
+    try {
+        return await fetch(`/api/sigs/${systemId}`, {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-store'
+            },
+            body: JSON.stringify(signature)
+        })
+    } catch (e) {
+        return console.error(e)
+    }
+}
+
+const getSignatures = async (systemId: number) => {
+    try {
+        const response = await fetch(`/api/sigs/${systemId}`);
+        return response.json()
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+const deleteConnection = async (input: PochvenConnectionInput) => {
+    try {
+        return await fetch('/api/data/trig', {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-store'
+            },
+            body: JSON.stringify({ ...input })
+        })
+    } catch (e) {
+        return console.error(e)
+    }
+}
+
+const putConnectionCritical = async (input: PochvenConnectionInput) => {
+    try {
+        return await fetch('/api/data/trig', {
+            method: 'PUT',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-store'
+            },
+            body: JSON.stringify({ ...input })
+        })
+    } catch (e) {
+        return console.error(e)
+    }
+}
+
+const getStaticEmpireRoute = async (systemName: string) => {
+    try {
+        const response = await fetch(`/api/data/static-empire-route`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-store'
+            },
+            body: JSON.stringify({ systemName })
+        })
+        return response.json()
+    } catch (e) {
+        console.log(e)
+    }
+}
 
 const { TextArea } = Input
+
+interface RightSideBarWrapperProps {
+    children: ReactNode
+    style?: CSSProperties
+}
+
+/**
+ * Simple CSS wrapper for right sidebar components.
+ */
+const SidebarWrapper = ({ style, children }: RightSideBarWrapperProps) => {
+    return (
+        <section
+            style={{
+                border: 'solid 1px white',
+                borderRadius: '10px',
+                padding: '0.6rem',
+                backgroundColor: '#260707',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.6rem',
+                ...(style ?? {})
+            }}>
+            {children}
+        </section>
+    )
+}
+
+interface SelectedSystemSignaturesProps {
+    character: any
+    isSpecialist: boolean
+    onDeleteSignatureClick: typeof deleteSignature
+    onMarkAsCriticalClick: typeof putConnectionCritical
+    onRemoveConnectionClick: typeof deleteConnection
+    onSignaturePaste: typeof postSignatures
+    selectedSystem: any
+    signatures: any
+    trigData: any
+}
+
+/**
+ * When a Pochven system is currently selected:
+ *
+ * - shows a button to let the user add a new connection
+ * - shows a list of current connections
+ *
+ */
+const SelectedSystemSignatures = ({
+    character,
+    isSpecialist,
+    onDeleteSignatureClick,
+    onMarkAsCriticalClick,
+    onSignaturePaste,
+    onRemoveConnectionClick,
+    selectedSystem,
+    signatures,
+    trigData
+}: SelectedSystemSignaturesProps) => {
+    if (character?.level < 2 || !trigData || !selectedSystem) return <></>
+    const selectedSystemConnections = useMemo<Connection[]>(() => {
+        return trigData.connections
+            .filter(
+                (c: Connection) => [c.pochvenSystemId, c.externalSystemId].includes(selectedSystem.solarSystemId)
+            )
+            .sort((a, b) => a.comment > b.comment)
+    }, [trigData.connections, selectedSystem.solarSystemId]);
+    const { solarSystemId } = selectedSystem;
+
+    const [isModalVisible, setIsModalVisible] = useState(false)
+    const [pasteValue, setPasteValue] = useState('')
+
+    useEffect(() => {
+        if (pasteValue.length > 0) {
+            const rows = pasteValue.match(/^.*((\r\n|\n|\r)|$)/gm)
+            const rowsWithCells = rows
+                .map((r) => r.split('\t'))
+                .map((r) => {
+                    return {
+                        sig: r[0],
+                        type: r[2],
+                        name: r[3]
+                    }
+                })
+            onSignaturePaste(selectedSystem, rowsWithCells)
+        }
+        setIsModalVisible(false)
+        setPasteValue('')
+    }, [onSignaturePaste, pasteValue, selectedSystem])
+
+    return (
+        <SidebarWrapper style={{ minWidth: '14rem' }}>
+            <a
+                style={{ fontSize: '1.4rem' }}
+                href={`https://zkillboard.com/system/${solarSystemId}/`}
+                target="_blank">
+                {selectedSystem.solarSystemName}
+            </a>
+            {selectedSystemConnections.length === 0 ? (
+                <div>No connections</div>
+            ) : (
+                selectedSystemConnections.map((s) => {
+                    return (
+                        <div
+                            key={s.comment}
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                            }}>
+                            <div>
+                                {s.pochvenSystemId === solarSystemId
+                                    ? s.comment
+                                    : `${s.externalSignature} ${s.pochvenSystemName} ${s.externalWormholeType}`}
+                            </div>
+                            {isSpecialist ? (
+                                <div style={{ marginLeft: '0.5rem' }}>
+                                    <Tooltip title="Delete connection">
+                                        <Button
+                                            type="dashed"
+                                            shape="circle"
+                                            onClick={() =>
+                                                onRemoveConnectionClick({ connectionId: s.id })
+                                            }
+                                            icon={<DeleteOutlined />}
+                                        />
+                                    </Tooltip>
+                                    <Tooltip title="Mark connection EOL">
+                                        <Button
+                                            type="dashed"
+                                            shape="circle"
+                                            style={{ marginLeft: '0.2rem' }}
+                                            onClick={() =>
+                                                onMarkAsCriticalClick({
+                                                    connectionId: s.id
+                                                })
+                                            }
+                                            icon={<IssuesCloseOutlined />}
+                                        />
+                                    </Tooltip>
+                                </div>
+                            ) : (
+                                <></>
+                            )}
+                        </div>
+                    )
+                })
+            )}
+            {character?.level === 3 ? <AddConnection /> : null}
+            <hr style={{ borderTop: '1px solid #bbb', width: '100%' }}></hr>
+            {signatures.length === 0 ? (
+                <div>No signatures</div>
+            ) : (
+                signatures.map((s) => {
+                    return (
+                        <div
+                            key={s.sig}
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginTop: '0.2rem'
+                            }}>
+                            <div>{s.sig}</div>
+                            <div style={{ width: '100%', marginLeft: '0.5rem' }}>{s.name}</div>
+                            {isSpecialist ? (
+                                <div style={{ marginLeft: '0.5rem' }}>
+                                    <Tooltip title="Delete signature">
+                                        <Button
+                                            type="dashed"
+                                            shape="circle"
+                                            onClick={() => onDeleteSignatureClick(solarSystemId, s)}
+                                            icon={<DeleteOutlined />}
+                                        />
+                                    </Tooltip>
+                                </div>
+                            ) : (
+                                <></>
+                            )}
+                        </div>
+                    )
+                })
+            )}
+            {isSpecialist ? (
+                <div style={{ marginTop: '0.6rem' }}>
+                    <Button
+                        onClick={() => {
+                            setIsModalVisible(true)
+                        }}>
+                        Paste
+                    </Button>
+                    <Button
+                        style={{ marginLeft: '0.5rem' }}
+                        onClick={() => {
+                            onDeleteSignatureClick(solarSystemId, undefined)
+                        }}>
+                        Clear
+                    </Button>
+                </div>
+            ) : (
+                <></>
+            )}
+            <Modal
+                title="Paste signatures:"
+                open={isModalVisible}
+                onOk={() => setIsModalVisible(false)}
+                onCancel={() => setIsModalVisible(false)}>
+                <TextArea
+                    rows={12}
+                    value={pasteValue}
+                    onChange={(e) => {
+                        setPasteValue(e.target.value)
+                    }}
+                />
+            </Modal>
+        </SidebarWrapper>
+    )
+}
 
 const edgeColor = (c: Connection) => {
     if (!c) return '#9d9d9e'
@@ -43,9 +349,9 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
     const [map, setMap] = useState(undefined)
     const trigStorage = useContext(TrigData)
     const session = useContext(Session)
-    const isSpesialist = session?.character?.level > 2
+    const isSpecialist = session?.character?.level > 2
     const [signatures, setSignatures] = useState<PochvenSignatureInput[]>([])
-    const [isModalVisible, setIsModalVisible] = useState(false)
+    const [kSpacePossibleConnectionSystems, setKSpacePossibleConnectionSystems] = useState<any[]>([])
     const [trackedCharacter, setTrackedCharacter] = useState<any>(null)
     const [trackedLocation, setTrackedLocation] = useState<number | null>(null)
     const [locationPollInterval, setLocationPollInterval] = useState<NodeJS.Timeout | null>(null)
@@ -53,61 +359,6 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
     const [width, height] = useWindowSize()
 
     const [hidden, setHidden] = useState(true)
-
-    const saveSignatures = (systemId: number, signatures: PochvenSignatureInput[]) => {
-        fetch(`/api/sigs/${systemId}`, {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                'Cache-Control': 'no-store'
-            },
-            body: JSON.stringify(signatures)
-        })
-            .then(() => fetchSignatures(trigStorage.selectedSystem))
-            .catch((e) => console.log(e))
-    }
-
-    const removeSignature = (systemId: number, signature: PochvenSignatureInput | undefined) => {
-        fetch(`/api/sigs/${systemId}`, {
-            method: 'DELETE',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                'Cache-Control': 'no-store'
-            },
-            body: JSON.stringify(signature)
-        }).then(() => fetchSignatures(trigStorage.selectedSystem))
-    }
-
-    const fetchSignatures = async (systemId: number) =>
-        await fetch(`/api/sigs/${systemId}`)
-            .then((res) => res.json())
-            .then((sigs) => setSignatures(sigs))
-
-    const removeConnection = (input: PochvenConnectionInput) => {
-        fetch('/api/data/trig', {
-            method: 'DELETE',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                'Cache-Control': 'no-store'
-            },
-            body: JSON.stringify({ ...input })
-        }).then(() => trigStorage.fetchTrigMap())
-    }
-
-    const setConnectionCritical = (input: PochvenConnectionInput) => {
-        fetch('/api/data/trig', {
-            method: 'PUT',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                'Cache-Control': 'no-store'
-            },
-            body: JSON.stringify({ ...input })
-        }).then(() => trigStorage.fetchTrigMap())
-    }
 
     useEffect(() => {
         if (!map) return
@@ -139,7 +390,11 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
         }
     }, [])
 
-    const events = {
+    const onFetchSignatures = useCallback<typeof getSignatures>((systemId) => {
+        return getSignatures(systemId).then((sigs) => setSignatures(sigs))
+    }, []);
+
+    const events = useMemo(() => ({
         select: (event) => {
             if (!session.character || session?.character?.level < 2) {
                 return
@@ -156,7 +411,8 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
             if (TRIG_SYSTEM_IDS.some((t) => t === systemId)) {
                 trigStorage.setSelectedSystem(systemId)
                 setSignatures([])
-                fetchSignatures(systemId)
+                onFetchSignatures(systemId)
+                getStaticEmpireRoute(system.solarSystemName).then((sigs) => setKSpacePossibleConnectionSystems(sigs))
                 return
             }
             if (system.solarSystemName.match(/J[0-9]{1,6}$/)) {
@@ -165,183 +421,11 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                 window.open(`https://evemaps.dotlan.net/system/${system.solarSystemName}`, '_blank')
             }
         }
-    }
+    }), [session?.character, trigStorage])
 
     const selectedSystem = useMemo<SimpleSystem | undefined>(() => {
         return trigStorage.systems.find((s) => s.solarSystemId === trigStorage.selectedSystem)
     }, [trigStorage?.systems, trigStorage?.selectedSystem]);
-
-    const selectedSystemSignatures = () => {
-        if (session?.character?.level < 2 || !trigStorage.trigData || !selectedSystem) return <></>
-        const selectedSystemConnections: Connection[] = trigStorage.trigData.connections
-            .filter(
-                (c: Connection) => [c.pochvenSystemId, c.externalSystemId].includes(selectedSystem.solarSystemId)
-            )
-            .sort((a, b) => a.comment > b.comment)
-        const { solarSystemId } = selectedSystem;
-        return (
-            <div
-                style={{
-                    minWidth: '14rem',
-                    border: 'solid 1px white',
-                    borderRadius: '10px',
-                    padding: '0.6rem',
-                    backgroundColor: '#260707',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.6rem'
-                }}>
-                <a
-                    style={{ fontSize: '1.4rem' }}
-                    href={`https://zkillboard.com/system/${solarSystemId}/`}
-                    target="_blank">
-                    {selectedSystem.solarSystemName}
-                </a>
-                {selectedSystemConnections.length === 0 ? (
-                    <div>No connections</div>
-                ) : (
-                    selectedSystemConnections.map((s) => {
-                        return (
-                            <div
-                                key={s.comment}
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                }}>
-                                <div>
-                                    {s.pochvenSystemId === solarSystemId
-                                        ? s.comment
-                                        : `${s.externalSignature} ${s.pochvenSystemName} ${s.externalWormholeType}`}
-                                </div>
-                                {isSpesialist ? (
-                                    <div style={{ marginLeft: '0.5rem' }}>
-                                        <Tooltip title="Delete connection">
-                                            <Button
-                                                type="dashed"
-                                                shape="circle"
-                                                onClick={() =>
-                                                    removeConnection({ connectionId: s.id })
-                                                }
-                                                icon={<DeleteOutlined />}
-                                            />
-                                        </Tooltip>
-                                        <Tooltip title="Mark connection EOL">
-                                            <Button
-                                                type="dashed"
-                                                shape="circle"
-                                                style={{ marginLeft: '0.2rem' }}
-                                                onClick={() =>
-                                                    setConnectionCritical({
-                                                        connectionId: s.id
-                                                    })
-                                                }
-                                                icon={<IssuesCloseOutlined />}
-                                            />
-                                        </Tooltip>
-                                    </div>
-                                ) : (
-                                    <></>
-                                )}
-                            </div>
-                        )
-                    })
-                )}
-                {session?.character?.level === 3 ? (
-                    <>
-                        <AddConnection />
-                        <StaticEmpireSystemsRouteOptimizer selectedSystem={selectedSystem} />
-                    </>
-                ) : null}
-                <hr style={{ borderTop: '1px solid #bbb', width: '100%' }}></hr>
-                {signatures.length === 0 ? (
-                    <div>No signatures</div>
-                ) : (
-                    signatures.map((s) => {
-                        return (
-                            <div
-                                key={s.sig}
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    marginTop: '0.2rem'
-                                }}>
-                                <div>{s.sig}</div>
-                                <div style={{ width: '100%', marginLeft: '0.5rem' }}>{s.name}</div>
-                                {isSpesialist ? (
-                                    <div style={{ marginLeft: '0.5rem' }}>
-                                        <Tooltip title="Delete signature">
-                                            <Button
-                                                type="dashed"
-                                                shape="circle"
-                                                onClick={() => removeSignature(solarSystemId, s)}
-                                                icon={<DeleteOutlined />}
-                                            />
-                                        </Tooltip>
-                                    </div>
-                                ) : (
-                                    <></>
-                                )}
-                            </div>
-                        )
-                    })
-                )}
-                {isSpesialist ? (
-                    <div style={{ marginTop: '0.6rem' }}>
-                        <Button
-                            onClick={() => {
-                                setIsModalVisible(true)
-                            }}>
-                            Paste
-                        </Button>
-                        <Button
-                            style={{ marginLeft: '0.5rem' }}
-                            onClick={() => {
-                                removeSignature(solarSystemId, undefined)
-                            }}>
-                            Clear
-                        </Button>
-                    </div>
-                ) : (
-                    <></>
-                )}
-                <Modal
-                    title="Paste signatures:"
-                    open={isModalVisible}
-                    onOk={() => setIsModalVisible(false)}
-                    onCancel={() => setIsModalVisible(false)}>
-                    <TextArea
-                        rows={12}
-                        value={pasteValue}
-                        onChange={(e) => {
-                            setPasteValue(e.target.value)
-                        }}
-                    />
-                </Modal>
-            </div>
-        )
-    }
-
-    const [pasteValue, setPasteValue] = useState('')
-
-    useEffect(() => {
-        if (pasteValue.length > 0) {
-            const rows = pasteValue.match(/^.*((\r\n|\n|\r)|$)/gm)
-            const rowsWithCells = rows
-                .map((r) => r.split('\t'))
-                .map((r) => {
-                    return {
-                        sig: r[0],
-                        type: r[2],
-                        name: r[3]
-                    }
-                })
-            saveSignatures(trigStorage.selectedSystem, rowsWithCells)
-        }
-        setIsModalVisible(false)
-        setPasteValue('')
-    }, [pasteValue])
 
     const options = {
         interaction: {
@@ -579,13 +663,58 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
         }
     }, [locationPollInterval])
 
+    const removeSignature = useCallback<typeof deleteSignature>((systemId, signature) => {
+        return deleteSignature(systemId, signature).then(() => onFetchSignatures(trigStorage.selectedSystem))
+    }, [onFetchSignatures, trigStorage.selectedSystem])
+    const removeConnection = useCallback<typeof deleteConnection>((connection) => {
+        return deleteConnection(connection).then(() => trigStorage.fetchTrigMap())
+    }, [trigStorage.fetchTrigMap])
+    const markConnectionAsCritical = useCallback<typeof putConnectionCritical>((connection) => {
+        return putConnectionCritical(connection).then(() => trigStorage.fetchTrigMap())
+    }, [trigStorage.fetchTrigMap])
+    const saveSignatures = useCallback<typeof postSignatures>((systemId, signatures) => {
+        return postSignatures(systemId, signatures).then(() => onFetchSignatures(systemId))
+    }, [onFetchSignatures, selectedSystem]);
+
     return (
         <div className={hidden ? 'map hide' : 'map'}>
-            <div style={{ position: 'absolute', right: '1rem', top: '5rem', zIndex: 1 }}>
-                {selectedSystemSignatures()}
-                <div style={{ marginTop: '1rem', border: 'solid 1px white', borderRadius: '10px', padding: '0.6rem', backgroundColor: '#260707' }}>
+            <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', gap: '1rem', right: '1rem', top: '5rem', zIndex: 1 }}>
+                <SelectedSystemSignatures
+                    character={session?.character}
+                    isSpecialist={isSpecialist}
+                    onDeleteSignatureClick={removeSignature}
+                    onMarkAsCriticalClick={markConnectionAsCritical}
+                    onRemoveConnectionClick={removeConnection}
+                    onSignaturePaste={saveSignatures}
+                    selectedSystem={selectedSystem}
+                    signatures={signatures}
+                    trigData={trigStorage?.trigData}
+                />
+                {selectedSystem !== undefined && session?.character?.level === 3 && (
+                    <SidebarWrapper
+                        style={{
+                            position: 'fixed',
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
+                            width: 'auto',
+                            minWidth: '5rem',
+                            maxWidth: '20rem',
+                            left: '1rem',
+                            top: '12rem',
+                            maxHeight: '50vh',
+                            overflow: 'auto'
+                        }}
+                    >
+                        <span style={{ fontSize: '1.4rem'}}>{selectedSystem.solarSystemName} System Candidates</span>
+                        <hr style={{ borderTop: '1px solid #bbb', width: '100%' }}></hr>
+                        {kSpacePossibleConnectionSystems.map(ksc => (
+                            <pre key={ksc.id} style={{ border: '1px solid #CCCCCC', padding: '0 1rem' }}>{...ksc}</pre>
+                        ))}
+                    </SidebarWrapper>
+                )}
+                <SidebarWrapper>
                     {!trackedCharacter ? (
-                        <Button 
+                        <Button
                             icon={<UserOutlined />} 
                             onClick={eveSsoLogin}
                             style={{ width: '100%' }}
@@ -610,7 +739,7 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                             </Button>
                         </div>
                     )}
-                </div>
+                </SidebarWrapper>
             </div>
 
             {trigStorage.trigData ? (
