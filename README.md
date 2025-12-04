@@ -1,6 +1,6 @@
-EVE Metro
+# EVE Metro
 
-EVE Metro is CCPs EVE Online games Pochven region mapping service. Service is available at https://evemetro.com. It is a subscription based service where all the in game currencty (ISK) is pooled and divided to pilots scanning and mappin connections to provide a highway to all users.
+Pochven region mapping service for [EVE Online](https://eveonline.com) (by CCP games). Service is available at https://evemetro.com. It is a subscription based service where all the in game currency (ISK) is pooled and divided to pilots scanning and mapping connections to provide a highway to all users.
 
 # Current team:
 - [Kybernauts](https://evewho.com/corporation/98644650) hosting and management
@@ -9,7 +9,7 @@ EVE Metro is CCPs EVE Online games Pochven region mapping service. Service is av
 
 ## EVE Metro api
 
-API is available and code for it resides in (eve-metro-api)[https://github.com/calli-eve/eve-metro-api] repository. Contact the team for access.
+API is available and code for it resides in [eve-metro-api repository](https://github.com/calli-eve/eve-metro-api). Contact the team for access.
 
 ## Cron Endpoints
 
@@ -17,7 +17,7 @@ Configure your cron job to call this endpoint every 30 minutes.
 
 ### `/api/cron/purge-connections`
 
-Automated endpoint that handles cleanup of expired triglavian connections in the system. This endpoint:
+Automated endpoint that handles cleanup of expired Triglavian connections in the system. This endpoint:
 - Removes stale/expired connections from the database
 - Should be called periodically to maintain data freshness
 - Helps maintain accurate pathfinding by removing outdated connection data
@@ -52,7 +52,8 @@ The SDE should be updated when CCP releases new versions, typically after major 
 ## Environment Variables
 
 ### EVE Online Integration
-- `NEXT_PUBLIC_DOMAIN` - Your application domain (e.g., evemetro.com)
+- `NEXT_PUBLIC_DOMAIN` - Your application domain (e.g., http://evemetro.com or http://localhost)
+  > Note: include the port if you're running a development server
 - `NEXT_PUBLIC_EVE_SSO_AUTH_HOST` - EVE SSO authentication host (default: https://login.eveonline.com)
 - `NEXT_PUBLIC_EVE_IMAGES_API_HOST` - EVE images API host (default: https://images.evetech.net)
 - `NEXT_PUBLIC_EVE_ESI_HOST` - EVE ESI API host (default: https://esi.evetech.net/latest)
@@ -112,7 +113,7 @@ Before you start, ensure you have the following installed:
 4. **Start the Development Database**
    Use Docker Compose to start the necessary services:
    ```bash
-   docker-compose -f docker-compose-dev.yml up -d
+   docker compose -f docker-compose-dev.yml up -d
    ```
    This will start the PostgreSQL database and any other services defined in `docker-compose.yml`.
 

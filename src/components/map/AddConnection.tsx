@@ -202,7 +202,7 @@ const AddConnection = () => {
                     <Button
                         type="primary"
                         onClick={showModal}
-                        style={{ marginBottom: 16, marginRight: '0.5rem' }}>
+                        style={{ marginRight: '0.5rem' }}>
                         Add connection
                     </Button>{' '}
                 </>

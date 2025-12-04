@@ -2,6 +2,22 @@ import type { Breakpoint } from 'antd'
 
 export const MONTHLY_FEE = 50000000
 
+export const EVE_REGION_IDS = {
+    Pochven: 10000070
+} as const
+
+/**
+ * One light year as defined by CCP (9.46 × 10^15) meters for the purposes of jump drives.
+ *
+ * @see https://developers.eveonline.com/docs/guides/map-data/#jump-drives
+ */
+export const ONE_LIGHT_YEAR_METERS = 9_460_000_000_000_000.0
+
+/**
+ * The maximum range for system candidates where a Proximity extraction filament will deposit you.
+ */
+export const PROXIMITY_EXTRACTION_FILAMENT_MAX_RANGE = 5 * ONE_LIGHT_YEAR_METERS
+
 export const TRIG_SYSTEM_IDS = [
     30002702, 30005029, 30003046, 30045329, 30002797, 30001381, 30002652, 30000206, 30020141,
     30045328, 30000021, 30002770, 30002225, 30003504, 30003495, 30002411, 30001413, 30040141,
@@ -30,6 +46,444 @@ export const CONNECTS_TO_CALDARI_IDS = [
 export const CONNECTS_TO_GALLENTE_IDS = [30002652, 30005029, 30002702, 30003046, 30005005]
 
 export const CONNECTS_TO_MINMATAR_IDS = [30002411, 30002079]
+
+/**
+ * All known C729 connection possibilities to systems into/out of Pochven. The goal would be to
+ * calculate this from API data, but 2 things are missing that I can tell:
+ *
+ * 1. there is no API method to get data on what K-space systems Pochven systems connected to
+ *      prior to Final Liminality
+ * 2. the formula for determining a K-space systems' eligibility is opaque, and available data
+ *      doesn't match observation
+ *
+ * This data is copied manually from the compilation of data available at https://edencom.space
+ */
+export const ELIGIBLE_POCHVEN_C729_SYSTEMS = {
+    /* Krai SVAROG */
+
+    Ahtila: [
+        'Aivonen',
+        'Akidagi',
+        'Asakai',
+        'Astoh',
+        'Elonaya',
+        'Enaluri',
+        'Haajinen',
+        'Ichoriya',
+        'Ikoskio',
+        'Innia',
+        'Kinakka',
+        'Martoh',
+        'Nennamaila',
+        'Onnamon',
+        'Piak',
+        'Prism',
+        'Raihbaka',
+        'Rohamaa',
+        'Samanuni',
+        'Tsuruma',
+        'Uchomida',
+        'Uuhulanen'
+    ],
+    Tunudan: [
+        'Enderailen',
+        'Hogimo',
+        'Huttaken',
+        'Kaunokka',
+        'Kubinen',
+        'Kulelen',
+        'Oisio',
+        'Oshaima',
+        'Rairomon',
+        'Sivala',
+        'Uedama',
+        'Venilen',
+        'Yria'
+    ],
+    Kuharah: ['Doril', 'Futzchag', 'Jayneleb', 'Kazna', 'Lilmad', 'Mifrata', 'Onsooh', 'Podion'],
+    Harva: [
+        'Aghesi',
+        'Airshaz',
+        'Charra',
+        'Fabin',
+        'Madimal',
+        'Maiah',
+        'Murema',
+        'Murzi',
+        'Patzcha',
+        'Yuhelia'
+    ],
+    Niarja: [
+        'Aphend',
+        'Ashab',
+        'Bahromab',
+        'Bhizheba',
+        'Fabum',
+        'Halaima',
+        'Hedion',
+        'Ikao',
+        'Inaro',
+        'Kaaputenen',
+        'Kamio',
+        'Kehour',
+        'Kudi',
+        'Madirmilire',
+        'Penirgman',
+        'Romi',
+        'Saana',
+        'Sayartchen',
+        'Sharji',
+        'Sirppala',
+        'Sirseshin',
+        'Teshi',
+        'Waskisen'
+    ],
+    Raravoss: [
+        'Anka',
+        'Ardishapur Prime',
+        'Ekid',
+        'Gammel',
+        'Gid',
+        'Iesa',
+        'Kamela',
+        'Mai',
+        'Myyhera',
+        'Nakri',
+        'Netsalakka',
+        'Orkashu',
+        'Rasile',
+        'Saikamon',
+        'Sasiekko',
+        'Sharhelund',
+        'Sosala',
+        'Thebeka',
+        'Uusanen',
+        'Youl',
+        'Zaimeth'
+    ],
+    Skarkon: [
+        'C-4D0W',
+        'CT8K-0',
+        'Ennur',
+        'Fegomenko',
+        'IL-H0A',
+        'Illamur',
+        'L4X-1V',
+        'M9-LAN',
+        'Meildolf',
+        'Mimiror',
+        'Offikatlin',
+        'Orien',
+        'Osvetur',
+        'PX-IHN',
+        'Tabbetzur',
+        'Unertek',
+        'WPV-JN'
+    ],
+    Nani: [
+        'Autama',
+        'Iidoken',
+        'Isanamo',
+        'Kirras',
+        'Nourvukaiken',
+        'Ouranienen',
+        'Sarekuwa',
+        'Tsuguwa',
+        'Tsukuras',
+        'Veisto'
+    ],
+    Urhinichi: [
+        'Anttiri',
+        'Inaro',
+        'Isikesu',
+        'Juunigaishi',
+        'Kaaputenen',
+        'Kusomonmon',
+        'Perimeter',
+        'Sirppala',
+        'Sirseshin',
+        'Suroken',
+        'Waskisen'
+    ],
+
+    /* Krai PERUN */
+
+    Otanuomi: [
+        'Akkilen',
+        'Eruka',
+        'Friggi',
+        'Hentogaira',
+        'Ihakana',
+        'Kiainti',
+        'Mastakomon',
+        'Ohkunen',
+        'Osaa',
+        'Otitoh',
+        'Otomainen',
+        'Otsela',
+        'Uchoshi',
+        'Vasala',
+        'Vouskiaho',
+        'Walvalin',
+        'Wirashoda'
+    ],
+    Krirald: [
+        'Anher',
+        'Ansen',
+        'Arifsdald',
+        'Arwa',
+        'Bei',
+        'Dudreda',
+        'Hagilur',
+        'Hakisalki',
+        'Ragnarg',
+        'Thelan'
+    ],
+    Konola: [
+        'Ahynada',
+        'Aikoro',
+        'Eitu',
+        'Erila',
+        'Horkkisen',
+        'Inoue',
+        'Isaziwa',
+        'Kaimon',
+        'Oiniken'
+    ],
+    Nalvula: [
+        'Akonoinen',
+        'Aurohunen',
+        'Autaris',
+        'E-OGL4',
+        'FY0W-N',
+        'Hageken',
+        'Hakonen',
+        'J-GAMP',
+        'Jan',
+        'M-OEE8',
+        'Obe',
+        'Ohkunen',
+        'Oimmo',
+        'Otsasai',
+        'P3EN-E',
+        'Taisy',
+        'Uosusuokko',
+        'V0DF-2',
+        'Vaajaita',
+        'Vellaine',
+        'Vuorrassi'
+    ],
+    Kino: [
+        'Ajanen',
+        'Erenta',
+        'Hogimo',
+        'Huttaken',
+        'Isanamo',
+        'Kaunokka',
+        'Kulelen',
+        'Kuoka',
+        'Litiura',
+        'Ouranienen',
+        'Sotrentaira',
+        'Uemisaisen',
+        'Venilen',
+        'Yria'
+    ],
+    Otela: [
+        'Alikara',
+        'Geras',
+        'Hirtamon',
+        'Liekuri',
+        'Malkalen',
+        'New Caldari',
+        'Niyabainen',
+        'Nomaa',
+        'Obanen',
+        'Olo',
+        'Poinen',
+        'Saisio'
+    ],
+    Ignebaener: [
+        'Adirain',
+        'Aere',
+        'Aeschee',
+        'Amoderia',
+        'Arraron',
+        'Attyn',
+        'Chantrousse',
+        'Hulmate',
+        'Jovainnon',
+        'Laurvier',
+        'Lisbaetanne',
+        'Stou'
+    ],
+    Komo: [
+        'Ahynada',
+        'Aikoro',
+        'Annaro',
+        'Aramachi',
+        'Auviken',
+        'Ichinumi',
+        'Ikuchi',
+        'Isaziwa',
+        'Isenairos',
+        'Kaimon',
+        'Kausaaja',
+        'Laah',
+        'Motsu',
+        'Muvolailen',
+        'Niyabainen',
+        'Nourvukaiken',
+        'Oichiya',
+        'Oiniken',
+        'Paara',
+        'Saila',
+        'Sarekuwa',
+        'Tunttaras',
+        'Uotila'
+    ],
+    Sakenta: [
+        'Ahynada',
+        'Ansila',
+        'Aokannitoh',
+        'Hirtamon',
+        'Hykkota',
+        'Ichinumi',
+        'Ikuchi',
+        'Maurasi',
+        'Muvolailen',
+        'New Caldari',
+        'Niyabainen',
+        'Nourvukaiken',
+        'Perimeter',
+        'Sarekuwa',
+        'Sobaseki',
+        'Tunttaras'
+    ],
+
+    /* Krai VELES */
+
+    Arvasaras: [
+        'Aikoro',
+        'Akonoinen',
+        'Alikara',
+        'Autaris',
+        'Hageken',
+        'Isanamo',
+        'Jan',
+        'Kaimon',
+        'New Caldari',
+        'Vaajaita',
+        'Vellaine'
+    ],
+    Kaunokka: [
+        'Erenta',
+        'Hogimo',
+        'Huttaken',
+        'Hysera',
+        'Kino',
+        'Kulelen',
+        'Oisio',
+        'Oshaima',
+        'Tunudan',
+        'Venilen',
+        'Yria'
+    ],
+    Ichoriya: [
+        'Ahtila',
+        'Aivonen',
+        'Akidagi',
+        'Aldranette',
+        'Enaluri',
+        'Hallanen',
+        'Hikkoken',
+        'Ikoskio',
+        'Immuri',
+        'Kinakka',
+        'Nennamaila',
+        'Onnamon',
+        'Pavanakka',
+        'Piak',
+        'Rohamaa',
+        'Samanuni',
+        'Tsuruma',
+        'Uchomida',
+        'Uuhulanen'
+    ],
+    Angymonne: [
+        'Aice',
+        'Amattens',
+        'Antollare',
+        'Avele',
+        'Averon',
+        'Bereye',
+        'Carirgnottin',
+        'Enedore',
+        'Jurlesel',
+        'Laic',
+        'Leremblompes',
+        'Muer',
+        'Odixie',
+        'Scuelazyns',
+        'Tolle'
+    ],
+    Archee: [
+        'Adrallezoen',
+        'Ardallabier',
+        'Ardene',
+        'Atier',
+        'Bawilan',
+        'Boillair',
+        'Brapelille',
+        'Brybier',
+        'Caretyn',
+        'Croleur',
+        'Fricoure',
+        'Ney'
+    ],
+    Vale: [
+        'Allamotte',
+        'Andole',
+        'Arant',
+        'Atlangeins',
+        'Cat',
+        'Derririntel',
+        'Erme',
+        'Old Man Star',
+        'Ommare',
+        'Pemene',
+        'Tierijev',
+        'Villore'
+    ],
+    Ala: [
+        'Adrallezoen',
+        'Aliette',
+        'Ardallabier',
+        'Ardene',
+        'Boillair',
+        'Fasse',
+        'Gratesier',
+        'Kurniainen',
+        'Mormelot',
+        'Ney',
+        'Odette',
+        'Ravarin',
+        'Saidusairos',
+        'Schoorasana',
+        'Stegette'
+    ],
+    Wirashoda: [
+        'Eruka',
+        'Mastakomon',
+        'Ohkunen',
+        'Osaa',
+        'Otanuomi',
+        'Uchoshi',
+        'Vasala',
+        'Vouskiaho'
+    ],
+    Senda: ['Geras', 'Shihuken', 'Sirseshin', 'Tuuriainas']
+} as const
 
 export const VELES_COLOR = '#447228'
 
@@ -347,3 +801,8 @@ export const LABEL_NODES = [
 ]
 
 export const TABLE_BREAKPOINT = ['lg'] as Breakpoint[]
+
+/**
+ * @see sqlite.invGroups table
+ */
+const DISRUPTED_GATE_GROUP_ID = 4081
