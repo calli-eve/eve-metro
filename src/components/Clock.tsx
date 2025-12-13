@@ -29,6 +29,7 @@ const colorIndices = {
     border: -2,
 } as const;
 
+const ONE_MINUTE = 60000;
 /**
  * Utility to show a live clock with the current EVE and local date/times. If the document becomes
  * hidden (ie user tabs to another in the same window), pauses the live updates, and resumes when
@@ -38,7 +39,11 @@ const Clock = () => {
     const [currentTimes, setCurrentTimes] = useState(makeCurrentTimes);
 
     const updateCurrentTimes = useCallback(() => setCurrentTimes(makeCurrentTimes()), []);
-    useManagedInterval(updateCurrentTimes)
+    const { managedInterval } = useManagedInterval(updateCurrentTimes, ONE_MINUTE);
+
+    useEffect(() => {
+        managedInterval.enable();
+    }, [managedInterval]);
 
     const borderColor = volcano.at(colorIndices.border);
     return (
