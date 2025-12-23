@@ -5,7 +5,7 @@ import { useManagedInterval } from '../hooks/use-managed-interval'
 
 const eveTimeFormatter = new Intl.DateTimeFormat(
     undefined,
-    { timeZone: 'GMT', dateStyle: 'short', timeStyle: 'short', hourCycle: 'h24',  },
+    { timeZone: 'UTC', dateStyle: 'short', timeStyle: 'short', hourCycle: 'h24',  },
 );
 const localTimeFormatter = new Intl.DateTimeFormat(
     undefined,
