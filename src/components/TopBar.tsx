@@ -3,11 +3,13 @@ import { Button, Layout, Menu } from 'antd'
 import { useContext, useState, useEffect } from 'react'
 import { Session } from '../state/SessionContainer'
 import Character from './Character'
+import { Clock } from './Clock'
 import SsoLogin from './SsoLogin'
 import { DateTime } from 'luxon'
 
-export const TobBar = ({ activeKey, setActiveKey }) => {
-    const { Header } = Layout
+const { Header } = Layout
+
+export const TopBar = ({ activeKey, setActiveKey }) => {
     const session = useContext(Session)
     const [collapsed, setCollapsed] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
@@ -28,8 +30,8 @@ export const TobBar = ({ activeKey, setActiveKey }) => {
     const hideNonSubElements = session?.character?.level === undefined || session?.character?.level < 2
     const hideNonAdminElements = !session?.character?.admin
     const loggedIn = session?.character
-    const subbedUntill = session?.character?.subUntill
-        ? `Sub untill: ${DateTime.fromISO(session?.character?.subUntill).toISODate()} `
+    const subbedUntil = session?.character?.subUntill
+        ? `Sub until: ${DateTime.fromISO(session?.character?.subUntill).toISODate()} `
         : ''
 
     const menuItems = [
@@ -85,9 +87,10 @@ export const TobBar = ({ activeKey, setActiveKey }) => {
                     disabledOverflow={!isMobile}
                 />
             </div>
+            <Clock />
             <div className="user-section">
                 {loggedIn ? <Character setActiveKey={setActiveKey} /> : <SsoLogin />}
-                <span className="sub-status">{subbedUntill}</span>
+                <span className="sub-status">{subbedUntil}</span>
             </div>
         </Header>
     )

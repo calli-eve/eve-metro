@@ -150,6 +150,23 @@ h3 {
     justify-content: space-between;
     align-items: center;
     position: relative;
+
+    > .clock {
+        cursor: default;
+        border: 1px solid;
+        padding: 0.25rem;
+        display: flex;
+        gap: 0.25rem;
+        place-self: center;
+        place-content: center;
+        place-items: center;
+        width: 350px;
+
+        span {
+            line-height: 1.2rem;
+            font-size: 1.2rem;
+        }
+    }
 }
 
 .menu-container {
