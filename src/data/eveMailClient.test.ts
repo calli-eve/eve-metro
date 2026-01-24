@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon';
+import { DateTime, Settings } from 'luxon';
 import { knex } from '../../knex/knex';
 import { sendTopupEmailToUser } from './eveMailClient';
 import { AllowedEntity } from '../pages/api/admin/allowed';
@@ -17,10 +17,16 @@ jest.mock('./email', () => ({
 }));
 
 describe('sendTopupEmailToUser', () => {
+    let prevDefaultZone;
     beforeEach(async () => {
         // Clean up database before each test
         await knex('allowed_entity').del();
+        prevDefaultZone = Settings.defaultZone
+        Settings.defaultZone = 'UTC'
         jest.clearAllMocks();
+    });
+    afterEach(() => {
+        Settings.defaultZone = prevDefaultZone
     });
 
     it('should handle valid_untill as Date object from database', async () => {

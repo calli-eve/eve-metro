@@ -1,10 +1,10 @@
 import { Row, Col } from 'antd'
 import { Layout } from 'antd'
 import { Tabs } from 'antd'
-import { TobBar } from '../components/TopBar'
+import { TopBar } from '../components/TopBar'
 import Map from '../components/map'
 import WormholeTable from '../components/connections'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import PathFinder from '../components/route-planner/PathFinder'
 import { TrigData } from '../state/TrigDataContainer'
 import AdminTable from '../components/admin/AdminTable'
@@ -35,7 +35,7 @@ const Index = () => {
         session.fetchCharacter().then().catch(console.log)
     }, [])
 
-    const tabItems = [
+    const tabItems = useMemo(() => ([
         {
             key: '0',
             label: '',
@@ -111,12 +111,12 @@ const Index = () => {
                 </Row>
             )
         }
-    ]
+    ]), [activeKey]);
 
     return (
         <Layout className="layout">
             <Header className="header flex-end">
-                <TobBar activeKey={activeKey} setActiveKey={onChangeTab} />
+                <TopBar activeKey={activeKey} setActiveKey={onChangeTab} />
             </Header>
             <Content className="content">
                 <Tabs activeKey={activeKey} renderTabBar={() => <></>} items={tabItems} />

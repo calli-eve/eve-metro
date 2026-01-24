@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon';
+import { DateTime, Settings } from 'luxon'
 import { knex } from '../../knex/knex';
 import { processPaymentLogEntries, PaymentsLogEntry } from './wallet';
 import { MONTHLY_FEE } from '../const';
@@ -9,13 +9,16 @@ jest.mock('./eveMailClient', () => ({
 
 describe('Payment Processing Concurrency Tests', () => {
     const fixedDate = DateTime.utc(2024, 6, 15, 12, 0, 0);
-
+    let prevDefaultZone;
     beforeEach(() => {
         jest.spyOn(DateTime, 'utc').mockImplementation((() => fixedDate) as any);
+        prevDefaultZone = Settings.defaultZone;
+        Settings.defaultZone = 'UTC'
     });
 
     afterEach(() => {
         jest.restoreAllMocks();
+        Settings.defaultZone = prevDefaultZone;
     });
 
     beforeEach(async () => {

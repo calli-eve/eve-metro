@@ -9,14 +9,12 @@ import {
     TRIG_SYSTEM_IDS
 } from '../../const'
 import { PochvenConnectionInput, SimpleSystem } from '../../types/types'
+import { useTrackedCharacterLocation } from '../../hooks/use-tracked-character-location'
 import { useWindowSize } from '../../hooks/WindowResizeHook'
 import { Connection, TrigResponse } from '../../types/trig'
 import { DeleteOutlined, IssuesCloseOutlined, UserOutlined } from '@ant-design/icons'
 import { PochvenSignatureInput } from '../../types/sigs'
 import AddConnection from './AddConnection'
-import queryString from 'query-string'
-import Router from 'next/router'
-import { getCurrentLocation } from '../../data/esiClient'
 
 /* API helpers */
 const postSignatures = async (systemId: number, signatures: PochvenSignatureInput[]) => {
@@ -351,13 +349,9 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
     const session = useContext(Session)
     const isSpecialist = session?.character?.level > 2
     const [signatures, setSignatures] = useState<PochvenSignatureInput[]>([])
-    const [kSpacePossibleConnectionSystems, setKSpacePossibleConnectionSystems] = useState<any[]>([])
-    const [trackedCharacter, setTrackedCharacter] = useState<any>(null)
-    const [trackedLocation, setTrackedLocation] = useState<number | null>(null)
-    const [locationPollInterval, setLocationPollInterval] = useState<NodeJS.Timeout | null>(null)
+    const [kSpacePossibleConnectionSystems, setKSpacePossibleConnectionSystems] = useState<any[]>([]);
 
     const [width, height] = useWindowSize()
-
     const [hidden, setHidden] = useState(true)
 
     useEffect(() => {
@@ -375,20 +369,6 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
             setHidden(false)
         }, 500)
     }, [map])
-
-    useEffect(() => {
-        // Check for stored tracking session
-        const storedSession = localStorage.getItem('trackingSession')
-        if (storedSession) {
-            try {
-                const session = JSON.parse(storedSession)
-                startTracking(session)
-            } catch (error) {
-                console.error('Error parsing stored session:', error)
-                localStorage.removeItem('trackingSession')
-            }
-        }
-    }, [])
 
     const onFetchSignatures = useCallback<typeof getSignatures>((systemId) => {
         return getSignatures(systemId).then((sigs) => setSignatures(sigs))
@@ -416,7 +396,7 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                 return
             }
             if (system.solarSystemName.match(/J[0-9]{1,6}$/)) {
-                window.open(`http://anoik.is/systems/${system.solarSystemName}`, '_blank')
+                window.open(`https://anoik.is/systems/${system.solarSystemName}`, '_blank')
             } else {
                 window.open(`https://evemaps.dotlan.net/system/${system.solarSystemName}`, '_blank')
             }
@@ -612,56 +592,12 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
         }
     }
 
-    const eveSsoLogin = () => {
-        const ssoUrl = `${process.env.NEXT_PUBLIC_EVE_SSO_AUTH_HOST}/v2/oauth/authorize/?`
-        const state = Math.random().toString(36).substring(1)
-        const request = {
-            response_type: 'code',
-            redirect_uri: `${process.env.NEXT_PUBLIC_DOMAIN}/redirect`,
-            client_id: process.env.NEXT_PUBLIC_EVE_SSO_ID,
-            scope: 'esi-location.read_location.v1',
-            state
-        }
-
-        const stringified = queryString.stringify(request)
-        sessionStorage.setItem('savedState', state)
-        sessionStorage.setItem('trackingLogin', 'true')
-        Router.push(`${ssoUrl}${stringified}`)
-    }
-
-    const startTracking = async (characterSession: any) => {
-        setTrackedCharacter(characterSession)
-        // Start polling location every 10 seconds
-        const interval = setInterval(async () => {
-            try {
-                const location = await getCurrentLocation(characterSession)
-                if (location) {
-                    setTrackedLocation(location.solar_system_id)
-                }
-            } catch (error) {
-                console.error('Error fetching location:', error)
-                stopTracking()
-            }
-        }, 10000)
-        setLocationPollInterval(interval)
-    }
-
-    const stopTracking = () => {
-        if (locationPollInterval) {
-            clearInterval(locationPollInterval)
-            setLocationPollInterval(null)
-        }
-        setTrackedCharacter(null)
-        setTrackedLocation(null)
-    }
-
-    useEffect(() => {
-        return () => {
-            if (locationPollInterval) {
-                clearInterval(locationPollInterval)
-            }
-        }
-    }, [locationPollInterval])
+    const {
+        trackedCharacter,
+        trackedLocation,
+        onTrackCharacterClick,
+        onUntrackCharacterClick,
+    } = useTrackedCharacterLocation();
 
     const removeSignature = useCallback<typeof deleteSignature>((systemId, signature) => {
         return deleteSignature(systemId, signature).then(() => onFetchSignatures(trigStorage.selectedSystem))
@@ -712,34 +648,36 @@ const Map = ({ dragView = true, zoomView = true, mapHeight = '100%', mapWidth = 
                         ))}
                     </SidebarWrapper>
                 )}
-                <SidebarWrapper>
-                    {!trackedCharacter ? (
-                        <Button
-                            icon={<UserOutlined />} 
-                            onClick={eveSsoLogin}
-                            style={{ width: '100%' }}
-                        >
-                            Track Character
-                        </Button>
-                    ) : (
-                        <div>
-                            <div style={{ marginBottom: '0.5rem' }}>
-                                Tracking: {trackedCharacter.character.CharacterName}
-                            </div>
-                            {trackedLocation && (
-                                <div>
-                                    Location: {trigStorage.systems.find(s => s.solarSystemId === trackedLocation)?.solarSystemName}
-                                </div>
-                            )}
-                            <Button 
-                                onClick={stopTracking}
-                                style={{ width: '100%', marginTop: '0.5rem' }}
+                {session?.character && (
+                    <SidebarWrapper>
+                        {!trackedCharacter ? (
+                            <Button
+                                icon={<UserOutlined />}
+                                onClick={onTrackCharacterClick}
+                                style={{ width: '100%' }}
                             >
-                                Stop Tracking
+                                Track Character
                             </Button>
-                        </div>
-                    )}
-                </SidebarWrapper>
+                        ) : (
+                            <div>
+                                <div style={{ marginBottom: '0.5rem' }}>
+                                    Tracking: {trackedCharacter.character.CharacterName}
+                                </div>
+                                {trackedLocation && (
+                                    <div>
+                                        Location: {trigStorage.systems.find(s => s.solarSystemId === trackedLocation)?.solarSystemName}
+                                    </div>
+                                )}
+                                <Button
+                                    onClick={onUntrackCharacterClick}
+                                    style={{ width: '100%', marginTop: '0.5rem' }}
+                                >
+                                    Stop Tracking
+                                </Button>
+                            </div>
+                        )}
+                    </SidebarWrapper>
+                )}
             </div>
 
             {trigStorage.trigData ? (
