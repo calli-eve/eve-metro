@@ -1,6 +1,6 @@
 import { NextApiResponse } from 'next'
 import {
-    ELIGIBLE_POCHVEN_C729_SYSTEMS,
+    ELIGIBLE_POCHVEN_K162_SYSTEMS,
     SESSION_KEY
 } from '../../../const'
 import { ExtendedRequest, protectedHandler } from '../../../middleware/request-handler'
@@ -11,7 +11,7 @@ export default protectedHandler()
         const session = req.session?.get(SESSION_KEY)
         if (session.character.level < 2) return res.status(403).end()
         const systemName = req.body['systemName'];
-        const systemConnectionPossibilities = ELIGIBLE_POCHVEN_C729_SYSTEMS[systemName];
+        const systemConnectionPossibilities = ELIGIBLE_POCHVEN_K162_SYSTEMS[systemName];
 
         if (systemConnectionPossibilities === undefined) res.status(404).end()
         else res.status(200).json(systemConnectionPossibilities);
