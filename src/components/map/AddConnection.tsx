@@ -240,7 +240,7 @@ const AddConnection = () => {
                     <Form.Item
                         name="pochvenSystemId"
                         label="Start system"
-                        rules={[{ required: true, message: 'Please select Pocven system!' }]}>
+                        rules={[{ required: true, message: 'Please select Pochven system!' }]}>
                         <Select
                             showSearch
                             allowClear

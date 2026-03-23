@@ -48,7 +48,7 @@ export const CONNECTS_TO_GALLENTE_IDS = [30002652, 30005029, 30002702, 30003046,
 export const CONNECTS_TO_MINMATAR_IDS = [30002411, 30002079]
 
 /**
- * All known C729 connection possibilities to systems into/out of Pochven. The goal would be to
+ * All known K162 connection possibilities to systems into/out of Pochven. The goal would be to
  * calculate this from API data, but 2 things are missing that I can tell:
  *
  * 1. there is no API method to get data on what K-space systems Pochven systems connected to
@@ -58,7 +58,7 @@ export const CONNECTS_TO_MINMATAR_IDS = [30002411, 30002079]
  *
  * This data is copied manually from the compilation of data available at https://edencom.space
  */
-export const ELIGIBLE_POCHVEN_C729_SYSTEMS = {
+export const ELIGIBLE_POCHVEN_K162_SYSTEMS = {
     /* Krai SVAROG */
 
     Ahtila: [
@@ -515,12 +515,96 @@ export const TURNUR_SYSTEM_ID = 30002086
 
 export const NON_CAPITAL_SYSTEM_CLASSES_EVE = [1, 2, 3, 4, 13]
 
-export const POCHVEN_HOLE_TYPES = ['K162', 'C729', 'U372', 'F216', 'R081', 'X450']
+export const POCHVEN_HOLE_TYPES = [
+    'K162',
+    'C729',
+    'I078',
+    'L687',
+    'O546',
+    'U372',
+    'F216',
+    'R081',
+    'X450'
+]
 
 export const SESSION_KEY = 'av_session'
 
+/**
+ * The scan difficulty level of a given cosmic signature.
+ */
+const SIGNATURE_DIFFICULTY_LEVELS = {
+    I: 1,
+    II: 2,
+    III: 3,
+    IV: 4,
+    V: 5,
+    varies: -1,
+} as const;
+
 export const WH_TYPES = {
-    K162: { life: '16 Hours', leadsTo: 'Unknown', mass: 3000000000, jump: 1350000000 },
+    K162: {
+        life: 'Varies',
+        leadsTo: 'Varies',
+        mass: 3000000000,
+        jump: 1350000000,
+        sigLevel: SIGNATURE_DIFFICULTY_LEVELS.varies
+    },
+    C729: {
+        life: '12 Hours',
+        leadsTo: 'High-Sec, Low-Sec, Null-Sec',
+        mass: 1000000000,
+        jump: 375000000,
+        sigLevel: SIGNATURE_DIFFICULTY_LEVELS.III
+    },
+    R081: {
+        life: '12 Hours',
+        leadsTo: 'Class 4 W-Space',
+        mass: 1000000000,
+        jump: 450000000,
+        sigLevel: SIGNATURE_DIFFICULTY_LEVELS.II
+    },
+    X450: {
+        life: '12 Hours',
+        leadsTo: 'Drone Nullsec',
+        mass: 1000000000,
+        jump: 375000000,
+        sigLevel: SIGNATURE_DIFFICULTY_LEVELS.I // verify this
+    },
+    I078: {
+        life: '4 Hours',
+        leadsTo: 'Pochven (Krai Veles)',
+        mass: 160000,
+        jump: 375000000,
+        sigLevel: SIGNATURE_DIFFICULTY_LEVELS.II
+    },
+    L687: {
+        life: '4 Hours',
+        leadsTo: 'Pochven (Krai Perun)',
+        mass: 160000,
+        jump: 375000000,
+        sigLevel: SIGNATURE_DIFFICULTY_LEVELS.II
+    },
+    O546: {
+        life: '4 Hours',
+        leadsTo: 'Pochven (Krai Svarog)',
+        mass: 160000,
+        jump: 375000000, // what does this represent?
+        sigLevel: SIGNATURE_DIFFICULTY_LEVELS.II
+    },
+    U372: {
+        life: '12 Hours',
+        leadsTo: 'Pochven',
+        mass: 1000000000,
+        jump: 375000000,
+        sigLevel: SIGNATURE_DIFFICULTY_LEVELS.I
+    },
+    F216: {
+        life: '12 Hours',
+        leadsTo: 'Pochven',
+        mass: 1000000000,
+        jump: 375000000,
+        sigLevel: SIGNATURE_DIFFICULTY_LEVELS.I
+    },
     H296: { life: '24 Hours', leadsTo: 'Class 5', mass: 3000000000, jump: 1350000000 },
     B274: { life: '24 Hours', leadsTo: 'High-Sec', mass: 2000000000, jump: 300000000 },
     B041: { life: '48 Hours', leadsTo: 'Class 6', mass: 3000000000, jump: 1000000000 },
@@ -609,17 +693,7 @@ export const WH_TYPES = {
     C414: { life: '16 Hours', leadsTo: 'Class 17', mass: 750000000, jump: 300000000 },
     R259: { life: '16 Hours', leadsTo: 'Class 18', mass: 750000000, jump: 300000000 },
     S877: { life: '16 Hours', leadsTo: 'Class 14', mass: 750000000, jump: 300000000 },
-    V928: { life: '16 Hours', leadsTo: 'Class 16', mass: 750000000, jump: 300000000 },
-    U372: { life: '16 Hours', leadsTo: 'Pochven', mass: 1000000000, jump: 375000000 },
-    F216: {
-        life: '16 Hours',
-        leadsTo: 'Class 2 to Class 6 W-Space',
-        mass: 1000000000,
-        jump: 375000000
-    },
-    C729: { life: '12 Hours', leadsTo: 'High-Sec', mass: 1000000000, jump: 375000000 },
-    R081: { life: '16 Hours', leadsTo: 'Class 4 W-Space', mass: 1000000000, jump: 450000000 },
-    X450: { life: '16 Hours', leadsTo: 'Drone Nullsec ', mass: 1000000000, jump: 375000000 }
+    V928: { life: '16 Hours', leadsTo: 'Class 16', mass: 750000000, jump: 300000000 }
 }
 
 export const NODE_POSITIONS = {
