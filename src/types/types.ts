@@ -1,6 +1,13 @@
 import { StringifyOptions } from 'query-string'
 import { ESISystemJumps, ESISystemKills } from '../data/esiClient'
 import { AuthorizationResponse } from '../data/eveAuthClient'
+import { SESSION_KEY } from '../const'
+
+declare module 'iron-session' {
+    interface IronSessionData {
+        [SESSION_KEY]?: Session
+    }
+}
 
 export interface RouteSystem {
     currentSystemId: number

@@ -160,14 +160,14 @@ export const getTrigGraph = async (obfuscateOutput: boolean, filterOutPilots: bo
 
 export default publicHandler()
     .get<ExtendedRequest<void>, NextApiResponse>(async (req, res) => {
-        const session = req.session?.get(SESSION_KEY)
+        const session = req.session?.[SESSION_KEY]
         const obfuscateOutput = (session && session?.character?.level < 1) ?? true
         const filterOutPilots = (session && session?.character?.level < 3) ?? true
         const graph = await getTrigGraph(obfuscateOutput, filterOutPilots)
         res.status(200).json(graph)
     })
     .delete<ExtendedRequest<PochvenConnectionInput>, NextApiResponse>(async (req, res) => {
-        const session = req.session?.get(SESSION_KEY)
+        const session = req.session?.[SESSION_KEY]
         if (session?.character?.level < 3) return res.status(403).end()
         const { connectionId } = req.body
         const result = await deleteTrigConnection(connectionId)
@@ -181,17 +181,13 @@ export default publicHandler()
         res.status(200).end()
     })
     .post<ExtendedRequest<TrigConnection>, NextApiResponse>(async (req, res) => {
-        const session = req.session?.get(SESSION_KEY)
+        const session = req.session?.[SESSION_KEY]
         if (session?.character?.level < 3) return res.status(403).end()
         const result = await insertTrigConnection({
             ...req.body,
             creator: session.character.CharacterID
         })
         if (result === 'Already exists') return res.status(409).json({ error: 'Already exists' })
-        const graph = await getTrigGraph(false, false)
-        if (!graph.nodes.some((n) => n.id === req.body.pochvenSystemId)) {
-            return res.status(406)
-        }
         if (TRIG_SYSTEM_IDS.some((s) => s === req.body.pochvenSystemId))
             await insertAuditLogEvent({
                 timestamp: undefined,
@@ -203,7 +199,7 @@ export default publicHandler()
         res.status(200).end()
     })
     .put<ExtendedRequest<PochvenConnectionInput>, NextApiResponse>(async (req, res) => {
-        const session = req.session?.get(SESSION_KEY)
+        const session = req.session?.[SESSION_KEY]
         if (session?.character?.level < 3) return res.status(403).end()
         await setTrigConnectionCritical(req.body.connectionId)
         await insertAuditLogEvent({
@@ -216,7 +212,7 @@ export default publicHandler()
         return res.status(200).end()
     })
     .patch<ExtendedRequest<TrigConnection>, NextApiResponse>(async (req, res) => {
-        const session = req.session?.get(SESSION_KEY)
+        const session = req.session?.[SESSION_KEY]
         if (session?.character?.level < 3) return res.status(403).end()
         const connctionToUpdate = await getTrigConnectionById(req.body.id)
         await updateTrigConnection(req.body)

@@ -6,7 +6,7 @@ import { calculateRoute, CalculateRouteInput } from '../../../pathfinder/pathfin
 
 export default protectedHandler().post<ExtendedRequest<CalculateRouteInput>, NextApiResponse>(
     async (req, res) => {
-        const session = req.session?.get(SESSION_KEY)
+        const session = req.session?.[SESSION_KEY]
         if (session.character.level < 2) return res.status(403).end()
         const result = await calculateRoute(req.body)
         await insertAuditLogEvent({

@@ -14,7 +14,7 @@ export interface AllowedEntity {
 
 export default adminHandler()
     .get<ExtendedRequest<undefined>, NextApiResponse>(async (req, res) => {
-        const session = req.session.get(SESSION_KEY)
+        const session = req.session[SESSION_KEY]
 
         if (session === undefined) {
             return res.status(403).end()
@@ -24,7 +24,7 @@ export default adminHandler()
     })
     .post<ExtendedRequest<AllowedEntity>, NextApiResponse>(async (req, res) => {
         await insertAllowedEntity(req.body)
-        const session = req.session.get(SESSION_KEY)
+        const session = req.session[SESSION_KEY]
         await insertAuditLogEvent({
             timestamp: undefined,
             type: 'admin',
@@ -37,7 +37,7 @@ export default adminHandler()
     .delete<ExtendedRequest<AllowedEntity>, NextApiResponse>(async (req, res) => {
         const { entity_id } = req.body
         await deleteAllowedEntity(entity_id)
-        const session = req.session.get(SESSION_KEY)
+        const session = req.session[SESSION_KEY]
         await insertAuditLogEvent({
             timestamp: undefined,
             type: 'admin',

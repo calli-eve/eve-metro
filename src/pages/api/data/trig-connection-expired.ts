@@ -7,7 +7,7 @@ import { TrigConnection } from '../../../types/types'
 
 export default publicHandler()
     .post<ExtendedRequest<TrigConnection>, NextApiResponse>(async (req, res) => {
-        const session = req.session?.get(SESSION_KEY)
+        const session = req.session?.[SESSION_KEY]
         if (session?.character?.level < 1) return res.status(403).end()
         const updated = await setExpired(
             {
@@ -26,7 +26,7 @@ export default publicHandler()
         res.status(200).end()
     })
     .delete<ExtendedRequest<TrigConnection>, NextApiResponse>(async (req, res) => {
-        const session = req.session?.get(SESSION_KEY)
+        const session = req.session?.[SESSION_KEY]
         if (session?.character?.level < 3) return res.status(403).end()
         await resetExpired({
             ...req.body

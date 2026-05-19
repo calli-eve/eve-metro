@@ -19,7 +19,7 @@ export default adminHandler()
         return res.status(200).json(secretsOmmitted)
     })
     .post<ExtendedRequest<void>, NextApiResponse>(async (req, res) => {
-        const session = req.session.get(SESSION_KEY)
+        const session = req.session[SESSION_KEY]
         const walletWatcher: WalletWathcerEntry = {
             character_id: session.character.CharacterID,
             corp_id: session.character.corporation_id,
@@ -39,7 +39,7 @@ export default adminHandler()
         return res.status(200).end()
     })
     .delete<ExtendedRequest<WalletWathcerEntry>, NextApiResponse>(async (req, res) => {
-        const session = req.session.get(SESSION_KEY)
+        const session = req.session[SESSION_KEY]
         const deleted = await deleteWalletWatcher(req.body.character_id)
         await insertAuditLogEvent({
             timestamp: undefined,

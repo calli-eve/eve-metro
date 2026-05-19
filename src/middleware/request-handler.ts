@@ -1,45 +1,40 @@
 import nc from 'next-connect'
 import morgan from 'morgan'
-import { ironSession } from 'next-iron-session'
+import { getIronSession } from 'iron-session'
 import { SESSION_KEY } from '../const'
 import { Session } from '../types/types'
 import { onError } from './error-handler'
 import { NextApiRequest, NextApiResponse } from 'next'
+import { sessionOptions } from './iron'
 
 const ADMIN_CHARACTER_IDS = JSON.parse(process.env.ADMIN_CHARACTER_IDS)
 
-const session = ironSession({
-    password: process.env.COOKIE_CRYPT_KEY,
-    cookieName: 'av_ses',
-    cookieOptions: {
-        secure: process.env.NODE_ENV === 'production'
-    }
-})
+const withSession = async (req: any, res: NextApiResponse, next) => {
+    req.session = await getIronSession(req, res, sessionOptions)
+    next()
+}
+
 export interface ExtendedRequest<T> extends NextApiRequest {
     session: {
-        set: (string, Session) => void
-        get: (string) => Session
-        unset: () => void
-        save: () => void
-        destroy: () => void
+        [SESSION_KEY]?: Session
+        save: () => Promise<void>
+        destroy: () => Promise<void>
     }
     body: T
 }
 
 export interface ExtendedSessionRequest extends NextApiRequest {
     session: {
-        set: (string, Session) => void
-        get: (string) => Session
-        unset: () => void
-        save: () => void
-        destroy: () => void
+        [SESSION_KEY]?: Session
+        save: () => Promise<void>
+        destroy: () => Promise<void>
     }
 }
 
 const checkAllowed = async (req: ExtendedRequest<any>, res: NextApiResponse, next) => {
-    const session = req.session?.get(SESSION_KEY)
+    const session = req.session[SESSION_KEY]
     if (!session) {
-        req.session.destroy()
+        await req.session.destroy()
         return res.status(403).end()
     }
 
@@ -48,10 +43,10 @@ const checkAllowed = async (req: ExtendedRequest<any>, res: NextApiResponse, nex
     next()
 }
 
-const checkAdmin = (req: ExtendedRequest<any>, res: NextApiResponse, next) => {
-    const session = req.session?.get(SESSION_KEY)
+const checkAdmin = async (req: ExtendedRequest<any>, res: NextApiResponse, next) => {
+    const session = req.session[SESSION_KEY]
     if (!session) {
-        req.session.destroy()
+        await req.session.destroy()
         return res.status(403).end()
     }
     if (!ADMIN_CHARACTER_IDS.some((userId) => userId === session.character.CharacterID))
@@ -60,13 +55,13 @@ const checkAdmin = (req: ExtendedRequest<any>, res: NextApiResponse, next) => {
 }
 
 morgan.token('session', (req: ExtendedRequest<any>, res) => {
-    const session = req.session?.get(SESSION_KEY)
+    const session = req.session?.[SESSION_KEY]
     return `Session: ${session?.character?.CharacterID} - ${session?.character?.CharacterName}`
 })
 
 export const protectedHandler = () => {
     return nc({ onError })
-        .use(session)
+        .use(withSession)
         .use(
             morgan(
                 ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" ":session"'
@@ -76,7 +71,7 @@ export const protectedHandler = () => {
 }
 export const publicHandler = () => {
     return nc({ onError })
-        .use(session)
+        .use(withSession)
         .use(
             morgan(
                 ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" ":session"'
@@ -86,7 +81,7 @@ export const publicHandler = () => {
 
 export const adminHandler = () => {
     return nc({ onError })
-        .use(session)
+        .use(withSession)
         .use(
             morgan(
                 ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" ":session"'

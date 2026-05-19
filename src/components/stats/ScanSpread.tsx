@@ -60,7 +60,7 @@ const ScanSpread = () => {
             perWeek.reduce((acc, v) => {
                 return acc + v.count
             }, 0) / perWeek.length
-        return v.y < average || v.y < MINIMUM_SIGS_PER_WEEKDAY
+        return v.count < average || v.count < MINIMUM_SIGS_PER_WEEKDAY
     }
 
     const needsScanningDay = (v): boolean => {
@@ -68,7 +68,7 @@ const ScanSpread = () => {
             perDay.reduce((acc, v) => {
                 return acc + v.count
             }, 0) / perDay.length
-        return v.y < average || v.y < MINIMUM_SIGS_PER_HOUR
+        return v.count < average || v.count < MINIMUM_SIGS_PER_HOUR
     }
 
     const getBarColor = (value) => {
@@ -96,7 +96,7 @@ const ScanSpread = () => {
                             <XAxis dataKey="value" />
                             <Bar dataKey="count">
                             {perWeek.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={needsScanningWeek(entry.value) ? TRIGLAVIAN_RED : HIGHSEC_GREEN} />
+                                <Cell key={`cell-${index}`} fill={needsScanningWeek(entry) ? TRIGLAVIAN_RED : HIGHSEC_GREEN} />
                             ))}
                             </Bar>
                                 

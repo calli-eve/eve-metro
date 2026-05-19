@@ -12,7 +12,7 @@ export const maxEntityLevel = (allowedEntity: AllowedEntity[]) =>
     allowedEntity.length > 0 ? Math.max(...allowedEntity.map((a) => a.level)) : 0
 
 export default publicHandler().post<ExtendedRequest<void>, NextApiResponse>(async (req, res) => {
-    const session = req.session.get(SESSION_KEY)
+    const session = req.session[SESSION_KEY]
     if (!session) return res.status(403).end()
     const characterResponse = await getCharacter(session.character.CharacterID)
     const allowedEntity = await findAllowedEntity(session)
@@ -31,7 +31,7 @@ export default publicHandler().post<ExtendedRequest<void>, NextApiResponse>(asyn
         }
     }
 
-    req.session.set(SESSION_KEY, newSession)
+    req.session[SESSION_KEY] = newSession
     await req.session.save()
 
     return res.status(200).json(newSession.character)

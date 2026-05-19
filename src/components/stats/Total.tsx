@@ -10,7 +10,7 @@ const Total = () => {
     useEffect(() => {
         fetch('/api/stats/total-scanned')
             .then((res) => res.json())
-            .then((res) => setTotal(res.total))
+            .then((res) => setTotal(res))
     }, [])
 
     return (

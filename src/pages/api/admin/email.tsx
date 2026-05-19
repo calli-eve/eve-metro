@@ -14,7 +14,7 @@ export default adminHandler()
         return res.status(200).json(secretsOmmitted)
     })
     .post<ExtendedRequest<void>, NextApiResponse>(async (req, res) => {
-        const session = req.session.get(SESSION_KEY)
+        const session = req.session[SESSION_KEY]
         const emailBot: EmailBotEntry = {
             character_id: session.character.CharacterID,
             secret: encryptSessionString(session)
@@ -33,7 +33,7 @@ export default adminHandler()
         return res.status(200).end()
     })
     .delete<ExtendedRequest<EmailBotEntry[]>, NextApiResponse>(async (req, res) => {
-        const session = req.session.get(SESSION_KEY)
+        const session = req.session[SESSION_KEY]
         const deleted = await deleteEmailBot()
         await insertAuditLogEvent({
             timestamp: undefined,

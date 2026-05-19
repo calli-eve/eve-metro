@@ -5,7 +5,7 @@ import { ExtendedRequest, protectedHandler } from '../../../middleware/request-h
 
 export default protectedHandler().get<ExtendedRequest<unknown>, NextApiResponse>(
     async (req, res) => {
-        const session = req.session?.get(SESSION_KEY)
+        const session = req.session?.[SESSION_KEY]
         if (session.character.level < 3) return res.status(403).end()
         const allTime = await countAllTimeScanners()
         res.status(200).json(allTime)

@@ -49,7 +49,7 @@ export default publicHandler().post<ExtendedRequest<{ code: string }>, NextApiRe
             meta: JSON.stringify(session.character)
         })
 
-        req.session.set(SESSION_KEY, authorizedSession)
+        req.session[SESSION_KEY] = authorizedSession
         await req.session.save()
         res.status(200).json(characterResponse.data)
     }

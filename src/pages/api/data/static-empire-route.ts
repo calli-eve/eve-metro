@@ -8,7 +8,7 @@ import { allTrigSignaturesForSystem } from '../../../data/signatures'
 
 export default protectedHandler()
     .post<ExtendedRequest<{ systemName: string; }>, NextApiResponse>((req, res) => {
-        const session = req.session?.get(SESSION_KEY)
+        const session = req.session?.[SESSION_KEY]
         if (session.character.level < 2) return res.status(403).end()
         const systemName = req.body['systemName'];
         const systemConnectionPossibilities = ELIGIBLE_POCHVEN_K162_SYSTEMS[systemName];
