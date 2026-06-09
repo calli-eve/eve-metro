@@ -11,7 +11,7 @@ interface EmailBotState {
     status?: string
 }
 
-const RegisterEmailBot = () => {
+const RegisterEmailBot = ({ isActive }: { isActive?: boolean }) => {
     const { Title } = Typography
 
     const [emailBotCharacter, setEmailBotCharacter] = useState<EmailBotState>(undefined)
@@ -72,8 +72,9 @@ const RegisterEmailBot = () => {
     }
 
     useEffect(() => {
+        if (!isActive) return
         getEmailBotCharacter()
-    }, [])
+    }, [isActive])
 
     return (
         <>

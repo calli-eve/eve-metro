@@ -4,7 +4,7 @@ import { Button, Typography, Table } from 'antd'
 import { useEffect, useState } from 'react'
 import { WalletWathcerEntry } from '../../data/wallet'
 
-const RegisterWallet = () => {
+const RegisterWallet = ({ isActive }: { isActive?: boolean }) => {
     const { Title } = Typography
 
     const [walletWatcherCharacters, setWalletWatcherCharacters] = useState([])
@@ -74,8 +74,9 @@ const RegisterWallet = () => {
     }
 
     useEffect(() => {
+        if (!isActive) return
         getAllCharactersWithWalletWatcher()
-    }, [])
+    }, [isActive])
 
     return (
         <>

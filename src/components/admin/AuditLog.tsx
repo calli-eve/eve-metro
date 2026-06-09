@@ -4,7 +4,7 @@ import { AuditLogEntry } from '../../data/audit'
 import { DownOutlined } from '@ant-design/icons'
 import { JSONTree } from 'react-json-tree'
 
-const AuditLog = () => {
+const AuditLog = ({ isActive }: { isActive?: boolean }) => {
     const { Title } = Typography
     const [isModalVisible, setIsModalVisible] = useState(false)
     const [selectedEntry, setSelectedEntry] = useState<AuditLogEntry>(undefined)
@@ -47,6 +47,7 @@ const AuditLog = () => {
     }
 
     useEffect(() => {
+        if (!isActive) return
         setLoading(true)
         setAuditLogList([])
         fetch('/api/admin/audit', {
@@ -60,7 +61,7 @@ const AuditLog = () => {
             .then((res) => res.json())
             .then((json) => setAuditLogList(json))
             .finally(() => setLoading(false))
-    }, [auditLogPage])
+    }, [isActive, auditLogPage])
 
     return (
         <>

@@ -105,7 +105,7 @@ const Index = () => {
                 <Row justify="center" align="top">
                     <Col span={2} />
                     <Col span={20} style={{ maxWidth: '1400px' }}>
-                        <AdminTable />
+                        <AdminTable isActive={activeKey === '5'} />
                     </Col>
                     <Col span={2} />
                 </Row>

@@ -21,7 +21,7 @@ export interface ExtendedAllowedEntity extends AllowedEntity {
     name: string
 }
 
-const AdminTable = () => {
+const AdminTable = ({ isActive }: { isActive?: boolean }) => {
     const { Title } = Typography
 
     const [adminUsers, setAdminUsers] = useState([])
@@ -165,9 +165,10 @@ const AdminTable = () => {
     }
 
     useEffect(() => {
+        if (!isActive) return
         adminCharacterDataSource().then(setAdminUsers).catch(console.log)
         fetchAllowedList()
-    }, [])
+    }, [isActive])
 
     return (
         <>
@@ -196,8 +197,8 @@ const AdminTable = () => {
                     )}
                 columns={columnsAllowed}
             />
-            <WalletTransactions />
-            <AuditLog />
+            <WalletTransactions isActive={isActive} />
+            <AuditLog isActive={isActive} />
             <Title className="white-text" level={2}>
                 Admin users:
             </Title>
@@ -208,8 +209,8 @@ const AdminTable = () => {
                 columns={columnsAdmin}
                 pagination={false}
             />
-            <RegisterWallet />
-            <RegisterEmailBot />
+            <RegisterWallet isActive={isActive} />
+            <RegisterEmailBot isActive={isActive} />
         </>
     )
 }

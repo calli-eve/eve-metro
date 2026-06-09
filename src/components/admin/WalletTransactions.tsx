@@ -3,7 +3,7 @@ import { Button, Table, Typography } from 'antd'
 import { PaymentsLogEntry } from '../../data/wallet'
 import CharRow from './CharRow'
 
-const WalletTransactions = () => {
+const WalletTransactions = ({ isActive }: { isActive?: boolean }) => {
     const { Title } = Typography
     const [paymentsLogList, setPaymentsLogList] = useState<PaymentsLogEntry[]>([])
     const [paymentsLogPage, setPaymentsLogPage] = useState(0)
@@ -26,6 +26,7 @@ const WalletTransactions = () => {
     ]
 
     useEffect(() => {
+        if (!isActive) return
         setLoading(true)
         setPaymentsLogList([])
         fetch('/api/admin/transactions', {
@@ -39,7 +40,7 @@ const WalletTransactions = () => {
             .then((res) => res.json())
             .then((json) => setPaymentsLogList(json))
             .finally(() => setLoading(false))
-    }, [paymentsLogPage])
+    }, [isActive, paymentsLogPage])
 
     return (
         <>
